@@ -315,6 +315,89 @@
             border-radius: 3px;
             font-family: monospace;
         }
+        .next-week-section {
+            background: linear-gradient(135deg, #f0f4ff 0%, #e8edff 100%);
+            border: 2px solid #c3cff7;
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 30px;
+        }
+        .next-week-section h2 {
+            margin-top: 0;
+            color: #4a5568;
+        }
+        .next-week-section h2::before {
+            content: '🔮';
+        }
+        .next-week-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 15px;
+        }
+        @media (max-width: 768px) {
+            .next-week-cards { grid-template-columns: 1fr; }
+        }
+        .next-week-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            border: 2px solid #c3cff7;
+            text-align: center;
+        }
+        .next-week-card .nw-day {
+            font-size: 16px;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 6px;
+        }
+        .next-week-card .nw-date {
+            font-size: 13px;
+            color: #718096;
+            margin-bottom: 12px;
+        }
+        .next-week-card .nw-person {
+            font-size: 22px;
+            font-weight: bold;
+            color: #2d3748;
+            background: linear-gradient(135deg, #e0e7ff 0%, #c3cff7 100%);
+            border-radius: 8px;
+            padding: 12px;
+        }
+        .date-display-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            background: white;
+            transition: border-color 0.3s;
+            cursor: pointer;
+        }
+        .date-display-wrapper:hover {
+            border-color: #667eea;
+        }
+        .date-display {
+            flex: 1;
+            padding: 12px;
+            font-size: 15px;
+            color: #2d3748;
+            font-weight: 500;
+        }
+        .date-hidden-input {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+            pointer-events: none;
+        }
+        .date-picker-icon {
+            padding: 10px 12px;
+            cursor: pointer;
+            font-size: 16px;
+            color: #667eea;
+            user-select: none;
+        }
     </style>
 </head>
 <body>
@@ -349,8 +432,12 @@
                     
                     <div class="record-section">
                         <div class="date-input-group">
-                            <label for="tuesday-date">📅 Date:</label>
-                            <input type="date" id="tuesday-date">
+                            <label>📅 Date:</label>
+                            <div class="date-display-wrapper" onclick="document.getElementById('tuesday-date').showPicker()">
+                                <span class="date-display" id="tuesday-date-display"></span>
+                                <input type="date" id="tuesday-date" class="date-hidden-input" onchange="syncDateDisplay('tuesday')">
+                                <span class="date-picker-icon">✏️</span>
+                            </div>
                         </div>
                         <div class="date-input-group">
                             <label for="tuesday-person">👤 Who stayed late:</label>
@@ -373,8 +460,12 @@
                     
                     <div class="record-section">
                         <div class="date-input-group">
-                            <label for="thursday-date">📅 Date:</label>
-                            <input type="date" id="thursday-date">
+                            <label>📅 Date:</label>
+                            <div class="date-display-wrapper" onclick="document.getElementById('thursday-date').showPicker()">
+                                <span class="date-display" id="thursday-date-display"></span>
+                                <input type="date" id="thursday-date" class="date-hidden-input" onchange="syncDateDisplay('thursday')">
+                                <span class="date-picker-icon">✏️</span>
+                            </div>
                         </div>
                         <div class="date-input-group">
                             <label for="thursday-person">👤 Who stayed late:</label>
@@ -388,6 +479,22 @@
                             <button class="confirm" id="record-thursday">✓ Record & Advance</button>
                             <button class="secondary" id="skip-thursday">Skip to Next →</button>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="next-week-section">
+                <h2>Next Week Preview</h2>
+                <div class="next-week-cards">
+                    <div class="next-week-card">
+                        <div class="nw-day">📅 Tuesday</div>
+                        <div class="nw-date" id="next-tuesday-date">—</div>
+                        <div class="nw-person" id="next-tuesday-person">—</div>
+                    </div>
+                    <div class="next-week-card">
+                        <div class="nw-day">📆 Thursday</div>
+                        <div class="nw-date" id="next-thursday-date">—</div>
+                        <div class="nw-person" id="next-thursday-person">—</div>
                     </div>
                 </div>
             </div>
@@ -483,11 +590,63 @@
             }
         }
 
-        // Set default dates
+        // Get the Tuesday and Thursday dates of a given week offset (0 = current, 1 = next)
+        function getWeekDates(weekOffset = 0) {
+            const today = new Date();
+            const day = today.getDay(); // 0=Sun,1=Mon,2=Tue,3=Wed,4=Thu,5=Fri,6=Sat
+            // Calculate days to this week's Tuesday (day 2)
+            const daysToTuesday = (2 - day + 7) % 7;
+            const tuesday = new Date(today);
+            tuesday.setDate(today.getDate() + daysToTuesday + (weekOffset * 7));
+            const thursday = new Date(tuesday);
+            thursday.setDate(tuesday.getDate() + 2);
+            return { tuesday, thursday };
+        }
+
+        // Format a Date object as YYYY-MM-DD for input[type=date]
+        function toInputDate(date) {
+            return date.toISOString().split('T')[0];
+        }
+
+        // Format a Date object as DD/MM/YYYY for display
+        function toDisplayDate(date) {
+            return date.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        }
+
+        // Sync date display from hidden input (DD/MM/YYYY)
+        function syncDateDisplay(day) {
+            const input = document.getElementById(day + '-date');
+            const display = document.getElementById(day + '-date-display');
+            if (input.value) {
+                const [y, m, d] = input.value.split('-');
+                display.textContent = `${d}/${m}/${y}`;
+            } else {
+                display.textContent = '—';
+            }
+        }
+
+        // Set default dates to this week's Tuesday and Thursday
         function setDefaultDates() {
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('tuesday-date').value = today;
-            document.getElementById('thursday-date').value = today;
+            const { tuesday, thursday } = getWeekDates(0);
+            document.getElementById('tuesday-date').value = toInputDate(tuesday);
+            document.getElementById('thursday-date').value = toInputDate(thursday);
+            syncDateDisplay('tuesday');
+            syncDateDisplay('thursday');
+        }
+
+        // Render the upcoming week preview section
+        function updateNextWeekPreview() {
+            const { tuesday, thursday } = getWeekDates(1);
+            const nextTuesdayIdx = (app.currentIndex.tuesday) % app.rotations.tuesday.length;
+            const nextThursdayIdx = (app.currentIndex.thursday) % app.rotations.thursday.length;
+            // Peek one step ahead from current index (what will be shown AFTER current week)
+            const tuesdayPerson = app.rotations.tuesday[nextTuesdayIdx];
+            const thursdayPerson = app.rotations.thursday[nextThursdayIdx];
+
+            document.getElementById('next-tuesday-date').textContent = toDisplayDate(tuesday);
+            document.getElementById('next-thursday-date').textContent = toDisplayDate(thursday);
+            document.getElementById('next-tuesday-person').textContent = tuesdayPerson;
+            document.getElementById('next-thursday-person').textContent = thursdayPerson;
         }
 
         // Update displays
@@ -516,6 +675,8 @@
             
             tuesdayEl.className = 'current-person' + (tuesdayPerson === 'Joseph' ? ' highlight' : '');
             thursdayEl.className = 'current-person' + (thursdayPerson === 'Joseph' ? ' highlight' : '');
+            
+            updateNextWeekPreview();
         }
 
         // Save to Google Sheets
@@ -599,8 +760,8 @@
             `;
             
             app.history.forEach((record, index) => {
-                const date = new Date(record.date);
-                const formattedDate = date.toLocaleDateString('en-US', { 
+                const date = new Date(record.date + 'T00:00:00');
+                const formattedDate = date.toLocaleDateString('en-GB', { 
                     weekday: 'short', 
                     year: 'numeric', 
                     month: 'short', 
