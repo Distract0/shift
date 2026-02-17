@@ -398,6 +398,88 @@
             color: #667eea;
             user-select: none;
         }
+        .pin-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px 0 5px;
+        }
+        .pin-dots {
+            display: flex;
+            gap: 18px;
+            margin-bottom: 28px;
+        }
+        .pin-dot {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 2px solid #856404;
+            background: transparent;
+            transition: background 0.15s;
+        }
+        .pin-dot.filled {
+            background: #856404;
+        }
+        .pin-dot.error {
+            border-color: #e53e3e;
+            background: #e53e3e;
+        }
+        .pin-pad {
+            display: grid;
+            grid-template-columns: repeat(3, 64px);
+            gap: 12px;
+        }
+        .pin-btn {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            font-size: 22px;
+            font-weight: 700;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            color: #2d3748;
+            border: 2px solid #e2e8f0;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
+        .pin-btn:hover {
+            background: #f0f4ff;
+            border-color: #667eea;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(102,126,234,0.2);
+        }
+        .pin-clear {
+            background: #fff5f5;
+            color: #e53e3e;
+            border-color: #fed7d7;
+        }
+        .pin-submit {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+            border-color: #38a169;
+        }
+        .pin-submit:hover {
+            box-shadow: 0 4px 10px rgba(72,187,120,0.4);
+        }
+        #pin-status {
+            margin-top: 16px;
+            font-size: 14px;
+            font-weight: 600;
+            min-height: 20px;
+        }
+        .pin-shake {
+            animation: shake 0.4s ease;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-8px); }
+            40% { transform: translateX(8px); }
+            60% { transform: translateX(-8px); }
+            80% { transform: translateX(4px); }
+        }
     </style>
 </head>
 <body>
@@ -406,22 +488,30 @@
         <div class="subtitle">Keep track of who stays late each week - synced with Google Sheets</div>
         
         <div id="setup-section" class="setup-section">
-            <h3>⚙️ Setup Google Sheets Connection</h3>
-            <div class="info-box">
-                <strong>Quick Setup Instructions:</strong>
-                <ol>
-                    <li>Create a new Google Sheet</li>
-                    <li>Go to <strong>Extensions → Apps Script</strong></li>
-                    <li>Delete any code and paste the code provided below</li>
-                    <li>Click <strong>Deploy → New deployment → Select type: Web app</strong></li>
-                    <li>Set "Execute as: Me" and "Who has access: Anyone"</li>
-                    <li>Click Deploy and copy the Web App URL</li>
-                    <li>Paste the URL below and click Connect</li>
-                </ol>
+            <h3>🔒 Enter PIN to unlock</h3>
+            <div class="pin-container">
+                <div class="pin-dots">
+                    <span class="pin-dot" id="dot-0"></span>
+                    <span class="pin-dot" id="dot-1"></span>
+                    <span class="pin-dot" id="dot-2"></span>
+                    <span class="pin-dot" id="dot-3"></span>
+                </div>
+                <div class="pin-pad">
+                    <button class="pin-btn" data-digit="1">1</button>
+                    <button class="pin-btn" data-digit="2">2</button>
+                    <button class="pin-btn" data-digit="3">3</button>
+                    <button class="pin-btn" data-digit="4">4</button>
+                    <button class="pin-btn" data-digit="5">5</button>
+                    <button class="pin-btn" data-digit="6">6</button>
+                    <button class="pin-btn" data-digit="7">7</button>
+                    <button class="pin-btn" data-digit="8">8</button>
+                    <button class="pin-btn" data-digit="9">9</button>
+                    <button class="pin-btn pin-clear" id="pin-clear">⌫</button>
+                    <button class="pin-btn" data-digit="0">0</button>
+                    <button class="pin-btn pin-submit" id="pin-submit">✓</button>
+                </div>
+                <div id="pin-status"></div>
             </div>
-            <input type="text" id="sheet-url" placeholder="Paste your Google Apps Script Web App URL here">
-            <button id="connect-btn" class="confirm">Connect to Google Sheets</button>
-            <div id="connection-status"></div>
         </div>
 
         <div id="main-content" style="display:none;">
@@ -549,43 +639,56 @@
             return data;
         }
 
-        // Connect to Google Sheets
-        async function connectToSheet() {
-            const url = document.getElementById('sheet-url').value.trim();
-            if (!url) {
-                alert('Please enter the Web App URL');
+        // Hardcoded sheet URL — unlocked by PIN
+        const SHEET_URL = 'https://script.google.com/macros/s/AKfycbzvsYGjs6MO5kvN_IGIsu15jXnIVj2O3fhfDw4Bj7KYnS-9vOb-qRMuO_lPCO6PV_X1/exec';
+        const CORRECT_PIN = '6969';
+
+        // PIN pad logic
+        let pinEntry = '';
+
+        function updatePinDots() {
+            for (let i = 0; i < 4; i++) {
+                const dot = document.getElementById('dot-' + i);
+                dot.classList.remove('filled', 'error');
+                if (i < pinEntry.length) dot.classList.add('filled');
+            }
+        }
+
+        function pinError() {
+            for (let i = 0; i < 4; i++) {
+                document.getElementById('dot-' + i).classList.add('error');
+            }
+            document.querySelector('.pin-dots').classList.add('pin-shake');
+            document.getElementById('pin-status').innerHTML = '<span style="color:#e53e3e">Incorrect PIN. Try again.</span>';
+            setTimeout(() => {
+                pinEntry = '';
+                updatePinDots();
+                document.querySelector('.pin-dots').classList.remove('pin-shake');
+                document.getElementById('pin-status').innerHTML = '';
+            }, 900);
+        }
+
+        async function submitPin() {
+            if (pinEntry !== CORRECT_PIN) {
+                pinError();
                 return;
             }
-
-            const statusDiv = document.getElementById('connection-status');
-            statusDiv.innerHTML = '<div class="loading">Connecting...</div>';
-
+            document.getElementById('pin-status').innerHTML = '<span style="color:#667eea">🔓 Connecting...</span>';
             try {
-                // Test connection
-                const response = await fetch(url + '?action=load');
+                app.sheetUrl = SHEET_URL;
+                const response = await fetch(SHEET_URL + '?action=load');
                 const data = await response.json();
-                
-                app.sheetUrl = url;
-                localStorage.setItem('sheetUrl', url);
-                
-                // Load data from sheet
-                if (data.currentIndex) {
-                    app.currentIndex = data.currentIndex;
-                }
-                if (data.history) {
-                    app.history = data.history;
-                }
-                
-                statusDiv.innerHTML = '<div style="color: #38a169; font-weight: bold;">✓ Connected Successfully!</div>';
-                
-                document.getElementById('setup-section').classList.add('connected');
+                if (data.currentIndex) app.currentIndex = data.currentIndex;
+                if (data.history) app.history = data.history;
+
+                document.getElementById('setup-section').style.display = 'none';
                 document.getElementById('main-content').style.display = 'block';
-                
                 updateDisplays();
                 updateHistory();
-                
             } catch (error) {
-                statusDiv.innerHTML = '<div class="error">Connection failed. Please check the URL and try again.</div>';
+                document.getElementById('pin-status').innerHTML = '<span style="color:#e53e3e">Connection failed. Try again.</span>';
+                pinEntry = '';
+                updatePinDots();
                 console.error('Connection error:', error);
             }
         }
@@ -798,15 +901,43 @@
         // Initialize app
         function init() {
             setDefaultDates();
-            
-            // Check if already connected
-            const savedUrl = localStorage.getItem('sheetUrl');
-            if (savedUrl) {
-                document.getElementById('sheet-url').value = savedUrl;
-            }
-            
-            // Attach event listeners
-            document.getElementById('connect-btn').addEventListener('click', connectToSheet);
+
+            // Wire up PIN pad digit buttons
+            document.querySelectorAll('.pin-btn[data-digit]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    if (pinEntry.length < 4) {
+                        pinEntry += this.getAttribute('data-digit');
+                        updatePinDots();
+                        if (pinEntry.length === 4) submitPin();
+                    }
+                });
+            });
+
+            document.getElementById('pin-clear').addEventListener('click', function() {
+                pinEntry = pinEntry.slice(0, -1);
+                updatePinDots();
+                document.getElementById('pin-status').innerHTML = '';
+            });
+
+            document.getElementById('pin-submit').addEventListener('click', function() {
+                if (pinEntry.length === 4) submitPin();
+            });
+
+            // Allow keyboard input for PIN
+            document.addEventListener('keydown', function(e) {
+                if (document.getElementById('setup-section').style.display !== 'none') {
+                    if (e.key >= '0' && e.key <= '9' && pinEntry.length < 4) {
+                        pinEntry += e.key;
+                        updatePinDots();
+                        if (pinEntry.length === 4) submitPin();
+                    } else if (e.key === 'Backspace') {
+                        pinEntry = pinEntry.slice(0, -1);
+                        updatePinDots();
+                    } else if (e.key === 'Enter' && pinEntry.length === 4) {
+                        submitPin();
+                    }
+                }
+            });
             
             document.getElementById('record-tuesday').addEventListener('click', function() {
                 recordStay('tuesday');
