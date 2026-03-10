@@ -480,6 +480,98 @@
             60% { transform: translateX(-8px); }
             80% { transform: translateX(4px); }
         }
+        .count-section {
+            background: linear-gradient(135deg, #f0fff4 0%, #e6ffed 100%);
+            border: 2px solid #9ae6b4;
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 30px;
+        }
+        .count-section h2 {
+            margin-top: 0;
+            color: #276749;
+        }
+        .count-section h2::before {
+            content: '🏆';
+        }
+        .count-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .count-card {
+            background: white;
+            border-radius: 12px;
+            padding: 18px 14px;
+            border: 2px solid #c6f6d5;
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+        }
+        .count-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(56,161,105,0.15);
+        }
+        .count-card.leader {
+            border-color: #f6e05e;
+            background: linear-gradient(135deg, #fffff0 0%, #fefcbf 100%);
+        }
+        .count-card .person-name {
+            font-size: 15px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+        .count-card .count-number {
+            font-size: 42px;
+            font-weight: 900;
+            color: #38a169;
+            line-height: 1;
+        }
+        .count-card.leader .count-number {
+            color: #d69e2e;
+        }
+        .count-card .count-label {
+            font-size: 11px;
+            color: #718096;
+            margin-top: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .count-card .day-breakdown {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            margin-top: 10px;
+        }
+        .count-card .day-pill {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        .count-card .day-pill.tue {
+            background: #bee3f8;
+            color: #2b6cb0;
+        }
+        .count-card .day-pill.thu {
+            background: #e9d8fd;
+            color: #6b46c1;
+        }
+        .count-card .leader-badge {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            font-size: 20px;
+        }
+        .count-equal-note {
+            text-align: center;
+            margin-top: 12px;
+            font-size: 13px;
+            color: #48bb78;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -587,6 +679,14 @@
                         <div class="nw-person" id="next-thursday-person">—</div>
                     </div>
                 </div>
+            </div>
+
+            <div class="count-section">
+                <h2>In-Office Count</h2>
+                <div class="count-grid" id="count-grid">
+                    <div class="empty-state" style="grid-column:1/-1">No records yet.</div>
+                </div>
+                <div class="count-equal-note" id="count-equal-note"></div>
             </div>
 
             <div class="history-section">
@@ -835,6 +935,77 @@
             }
         }
 
+        // Update in-office count display
+        function updateInOfficeCounts() {
+            // Gather all unique people across both rotations
+            const allPeople = [...new Set([
+                ...app.rotations.tuesday,
+                ...app.rotations.thursday
+            ])];
+
+            // Tally counts per person, per day
+            const counts = {};
+            allPeople.forEach(p => counts[p] = { total: 0, tuesday: 0, thursday: 0 });
+
+            app.history.forEach(record => {
+                const p = record.person;
+                const d = record.day ? record.day.toLowerCase() : '';
+                if (counts[p] !== undefined) {
+                    counts[p].total++;
+                    if (d === 'tuesday') counts[p].tuesday++;
+                    if (d === 'thursday') counts[p].thursday++;
+                }
+            });
+
+            const maxCount = Math.max(...allPeople.map(p => counts[p].total));
+            const leaders = allPeople.filter(p => counts[p].total === maxCount && maxCount > 0);
+            const allEqual = allPeople.every(p => counts[p].total === counts[allPeople[0]].total);
+
+            const grid = document.getElementById('count-grid');
+            const equalNote = document.getElementById('count-equal-note');
+
+            if (app.history.length === 0) {
+                grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;padding:20px;color:#a0aec0">No records yet. Start recording shifts to see counts.</div>';
+                equalNote.textContent = '';
+                return;
+            }
+
+            grid.innerHTML = allPeople.map(person => {
+                const c = counts[person];
+                const isLeader = leaders.includes(person) && maxCount > 0;
+                const inTuesdayRotation = app.rotations.tuesday.includes(person);
+                const inThursdayRotation = app.rotations.thursday.includes(person);
+
+                let pillsHTML = '';
+                if (inTuesdayRotation) {
+                    pillsHTML += `<span class="day-pill tue">Tue: ${c.tuesday}</span>`;
+                }
+                if (inThursdayRotation) {
+                    pillsHTML += `<span class="day-pill thu">Thu: ${c.thursday}</span>`;
+                }
+
+                return `
+                    <div class="count-card ${isLeader ? 'leader' : ''}">
+                        ${isLeader ? '<span class="leader-badge">👑</span>' : ''}
+                        <div class="person-name">${person}</div>
+                        <div class="count-number">${c.total}</div>
+                        <div class="count-label">in-office shift${c.total !== 1 ? 's' : ''}</div>
+                        <div class="day-breakdown">${pillsHTML}</div>
+                    </div>
+                `;
+            }).join('');
+
+            if (allEqual && app.history.length > 0) {
+                equalNote.textContent = '✅ All even — everyone has had equal in-office shifts!';
+            } else {
+                const minCount = Math.min(...allPeople.map(p => counts[p].total));
+                const behind = allPeople.filter(p => counts[p].total === minCount);
+                equalNote.textContent = behind.length === allPeople.length
+                    ? ''
+                    : `⚠️ ${behind.join(', ')} ${behind.length === 1 ? 'has' : 'have'} the fewest in-office shifts (${minCount})`;
+            }
+        }
+
         // Update history display
         function updateHistory() {
             const container = document.getElementById('history-container');
@@ -846,6 +1017,7 @@
                         <div>No records yet. Start recording your shifts above!</div>
                     </div>
                 `;
+                updateInOfficeCounts();
                 return;
             }
             
@@ -896,6 +1068,8 @@
                     deleteRecord(index);
                 });
             });
+
+            updateInOfficeCounts();
         }
 
         // Initialize app
