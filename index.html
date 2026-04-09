@@ -588,23 +588,23 @@
         const selected = getChecked(day);
         if (selected.length === 0) { alert('Please select at least one person.'); return; }
 
-        const notes     = document.getElementById(day + '-notes').value.trim();
-        const dayLabel  = day.charAt(0).toUpperCase() + day.slice(1);
-        const timestamp = new Date().toISOString();
-        const isMulti   = selected.length > 1;
+        const notes    = document.getElementById(day + '-notes').value.trim();
+        const dayLabel = day.charAt(0).toUpperCase() + day.slice(1);
+        const isMulti  = selected.length > 1;
 
-        // One history row per person, tagged as part of a group if multi
-        const groupId = isMulti ? timestamp : null;
-        selected.forEach(person => {
-            app.history.unshift({
-                date: dateVal, day: dayLabel, person, notes,
-                type: 'shift', groupId, timestamp
-            });
+        // Single combined record with a people array
+        app.history.unshift({
+            date:      dateVal,
+            day:       dayLabel,
+            people:    selected,          // always an array
+            notes,
+            type:      'shift',
+            timestamp: new Date().toISOString()
         });
 
         document.getElementById(day + '-notes').value = '';
 
-        // Only advance rotation if exactly one person stayed
+        // Advance rotation only when exactly one person stayed
         if (!isMulti) {
             app.currentIndex[day] = (app.currentIndex[day] + 1) % app.rotations[day].length;
         }
@@ -676,14 +676,17 @@
         allPeople.forEach(p => counts[p] = { total: 0, tuesday: 0, thursday: 0 });
 
         // Only count actual shifts, not holidays
+        // Support both old records (person string) and new records (people array)
         app.history.filter(r => r.type !== 'holiday').forEach(record => {
-            const p = record.person;
+            const people = record.people || (record.person ? [record.person] : []);
             const d = record.day ? record.day.toLowerCase() : '';
-            if (counts[p] !== undefined) {
-                counts[p].total++;
-                if (d === 'tuesday')  counts[p].tuesday++;
-                if (d === 'thursday') counts[p].thursday++;
-            }
+            people.forEach(p => {
+                if (counts[p] !== undefined) {
+                    counts[p].total++;
+                    if (d === 'tuesday')  counts[p].tuesday++;
+                    if (d === 'thursday') counts[p].thursday++;
+                }
+            });
         });
 
         const maxCount = Math.max(...allPeople.map(p => counts[p].total));
@@ -734,29 +737,48 @@
             return;
         }
 
+        // Sort: newest date first, then most recently recorded first as tiebreaker
+        const sorted = app.history
+            .map((record, rawIndex) => ({ record, rawIndex }))
+            .sort((a, b) => {
+                const dateDiff = b.record.date.localeCompare(a.record.date);
+                if (dateDiff !== 0) return dateDiff;
+                return (b.record.timestamp || '').localeCompare(a.record.timestamp || '');
+            });
+
         let html = `
             <table class="history-table">
                 <thead>
                     <tr>
                         <th>Date</th>
                         <th>Day</th>
-                        <th>Person</th>
+                        <th>Person(s)</th>
                         <th>Notes</th>
                         <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>`;
 
-        app.history.forEach((record, index) => {
+        sorted.forEach(({ record, rawIndex }) => {
             const date = new Date(record.date + 'T00:00:00');
             const formattedDate = date.toLocaleDateString('en-GB', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
             const isHoliday = record.type === 'holiday';
-            const isGrouped = record.groupId;
-            const rowClass  = isHoliday ? 'holiday-row' : (isGrouped ? 'group-row' : '');
-            const personCell = isHoliday
-                ? `<span class="holiday-badge">🏖️ Office Closed</span>`
-                : `<strong>${record.person}</strong>${isGrouped ? ' <span class="group-badge">👥 All In</span>' : ''}`;
-            const notesVal  = record.notes || '';
+
+            // Support both old (person string) and new (people array) formats
+            const people  = record.people || (record.person && record.person !== '—' ? [record.person] : []);
+            const isMulti = people.length > 1;
+
+            let personCell;
+            if (isHoliday) {
+                personCell = `<span class="holiday-badge">🏖️ Office Closed</span>`;
+            } else if (isMulti) {
+                personCell = `<strong>${people.join(', ')}</strong> <span class="group-badge">👥 All In</span>`;
+            } else {
+                personCell = `<strong>${people[0] || '—'}</strong>`;
+            }
+
+            const rowClass = isHoliday ? 'holiday-row' : (isMulti ? 'group-row' : '');
+            const notesVal = record.notes || '';
 
             html += `
                 <tr class="${rowClass}">
@@ -764,10 +786,10 @@
                     <td>${record.day}</td>
                     <td>${personCell}</td>
                     <td>
-                        <textarea class="notes-edit-input" id="notes-input-${index}" rows="2" placeholder="Add notes…">${notesVal}</textarea>
-                        <button class="confirm notes-save-btn" data-save-index="${index}">💾 Save</button>
+                        <textarea class="notes-edit-input" id="notes-input-${rawIndex}" rows="2" placeholder="Add notes…">${notesVal}</textarea>
+                        <button class="confirm notes-save-btn" data-save-index="${rawIndex}">💾 Save</button>
                     </td>
-                    <td><button class="delete-btn" data-delete-index="${index}">🗑️ Delete</button></td>
+                    <td><button class="delete-btn" data-delete-index="${rawIndex}">🗑️ Delete</button></td>
                 </tr>`;
         });
 
