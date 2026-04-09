@@ -3,11 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Office Rotation Tracker - Google Sheets</title>
+    <title>Office Rotation Tracker</title>
     <style>
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             max-width: 900px;
@@ -22,457 +20,35 @@
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         }
-        h1 {
-            color: #1a202c;
-            text-align: center;
-            margin-bottom: 10px;
-            font-size: 32px;
-        }
-        .subtitle {
-            text-align: center;
-            color: #718096;
-            margin-bottom: 40px;
-            font-size: 16px;
-        }
+        h1 { color: #1a202c; text-align: center; margin-bottom: 10px; font-size: 32px; }
+        .subtitle { text-align: center; color: #718096; margin-bottom: 40px; font-size: 16px; }
+
+        /* PIN */
         .setup-section {
-            background: #fff3cd;
-            border: 2px solid #ffc107;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-        }
-        .setup-section h3 {
-            margin-top: 0;
-            color: #856404;
-        }
-        .setup-section input {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 2px solid #e2e8f0;
-            border-radius: 5px;
-            font-size: 14px;
-        }
-        .setup-section button {
-            width: 100%;
-        }
-        .connected {
-            background: #d4edda;
-            border-color: #28a745;
-        }
-        .connected h3 {
-            color: #155724;
-        }
-        h2 {
-            color: #2d3748;
-            margin-top: 40px;
-            margin-bottom: 20px;
-            font-size: 24px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        h2::before {
-            content: '📊';
-            font-size: 28px;
-        }
-        .days-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        @media (max-width: 768px) {
-            .days-container {
-                grid-template-columns: 1fr;
-            }
-        }
-        .day-section {
-            padding: 25px;
-            background: linear-gradient(135deg, #f6f8fb 0%, #ffffff 100%);
-            border-radius: 15px;
-            border: 2px solid #e2e8f0;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .day-section:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-        }
-        .day-title {
-            font-size: 20px;
-            font-weight: bold;
-            color: #2d3748;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .tuesday-icon::before {
-            content: '📅';
-        }
-        .thursday-icon::before {
-            content: '📆';
-        }
-        .current-person {
-            font-size: 28px;
-            font-weight: bold;
-            color: #2d3748;
-            padding: 20px;
-            background: linear-gradient(135deg, #d4f4dd 0%, #a8e6cf 100%);
-            border-left: 5px solid #38a169;
-            margin: 15px 0;
-            border-radius: 10px;
-            text-align: center;
-            box-shadow: 0 4px 10px rgba(56,161,105,0.2);
-        }
-        .highlight {
-            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-            border-left-color: #f59e0b;
-            box-shadow: 0 4px 10px rgba(245,158,11,0.3);
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.02); }
-        }
-        .your-turn-badge {
-            display: inline-block;
-            background: #f59e0b;
-            color: white;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 14px;
-            margin-top: 10px;
-            font-weight: bold;
-        }
-        button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            margin: 5px;
-            transition: all 0.3s;
-            box-shadow: 0 4px 10px rgba(102,126,234,0.3);
-        }
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(102,126,234,0.4);
-        }
-        button:active {
-            transform: translateY(0);
-        }
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        button.secondary {
-            background: linear-gradient(135deg, #a0aec0 0%, #718096 100%);
-            box-shadow: 0 4px 10px rgba(160,174,192,0.3);
-        }
-        button.secondary:hover {
-            box-shadow: 0 6px 15px rgba(160,174,192,0.4);
-        }
-        button.confirm {
-            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
-            box-shadow: 0 4px 10px rgba(72,187,120,0.3);
-        }
-        button.confirm:hover {
-            box-shadow: 0 6px 15px rgba(72,187,120,0.4);
-        }
-        .button-group {
-            margin-top: 15px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 5px;
-        }
-        .record-section {
-            margin-top: 20px;
-            padding: 20px;
-            background: #f7fafc;
-            border-radius: 10px;
-            border: 1px solid #e2e8f0;
-        }
-        .date-input-group {
-            margin: 12px 0;
-        }
-        .date-input-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #2d3748;
-            font-size: 14px;
-        }
-        .date-input-group input,
-        .date-input-group select {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 15px;
-            transition: border-color 0.3s;
-        }
-        .date-input-group input:focus,
-        .date-input-group select:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        .history-section {
-            background: #f7fafc;
-            padding: 25px;
-            border-radius: 15px;
-            margin-top: 20px;
-        }
-        .history-table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            margin-top: 15px;
-            overflow: hidden;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-        }
-        .history-table th {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px;
-            text-align: left;
-            font-weight: 600;
-            font-size: 14px;
-        }
-        .history-table td {
-            padding: 15px;
-            border-bottom: 1px solid #e2e8f0;
-            background: white;
-            font-size: 14px;
-        }
-        .history-table tr:last-child td {
-            border-bottom: none;
-        }
-        .history-table tbody tr:hover {
-            background: #f7fafc;
-        }
-        .no-history {
-            text-align: center;
-            padding: 40px 20px;
-            color: #a0aec0;
-            font-style: italic;
-            font-size: 16px;
-        }
-        .delete-btn {
-            background: linear-gradient(135deg, #fc8181 0%, #e53e3e 100%);
-            padding: 8px 16px;
-            font-size: 13px;
-            box-shadow: 0 2px 6px rgba(229,62,62,0.3);
-        }
-        .delete-btn:hover {
-            box-shadow: 0 4px 10px rgba(229,62,62,0.4);
-        }
-        .empty-state {
-            text-align: center;
-            padding: 40px;
-            color: #a0aec0;
-        }
-        .empty-state-icon {
-            font-size: 64px;
-            margin-bottom: 15px;
-        }
-        .loading {
-            text-align: center;
-            padding: 20px;
-            color: #667eea;
-            font-weight: bold;
-        }
-        .error {
-            background: #fee;
-            border: 2px solid #e53e3e;
-            padding: 15px;
-            border-radius: 8px;
-            color: #c53030;
-            margin: 10px 0;
-        }
-        .info-box {
-            background: #e6f7ff;
-            border: 2px solid #1890ff;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 20px 0;
-            font-size: 14px;
-        }
-        .info-box ol {
-            margin: 10px 0;
-            padding-left: 20px;
-        }
-        .info-box li {
-            margin: 5px 0;
-        }
-        .info-box code {
-            background: #fff;
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-family: monospace;
-        }
-        .next-week-section {
-            background: linear-gradient(135deg, #f0f4ff 0%, #e8edff 100%);
-            border: 2px solid #c3cff7;
-            padding: 25px;
-            border-radius: 15px;
-            margin-top: 30px;
-        }
-        .next-week-section h2 {
-            margin-top: 0;
-            color: #4a5568;
-        }
-        .next-week-section h2::before {
-            content: '🔮';
-        }
-        .next-week-cards {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-top: 15px;
-        }
-        @media (max-width: 768px) {
-            .next-week-cards { grid-template-columns: 1fr; }
-        }
-        .next-week-card {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            border: 2px solid #c3cff7;
-            text-align: center;
-        }
-        .next-week-card .nw-day {
-            font-size: 16px;
-            font-weight: 700;
-            color: #667eea;
-            margin-bottom: 6px;
-        }
-        .next-week-card .nw-date {
-            font-size: 13px;
-            color: #718096;
-            margin-bottom: 12px;
-        }
-        .next-week-card .nw-person {
-            font-size: 22px;
-            font-weight: bold;
-            color: #2d3748;
-            background: linear-gradient(135deg, #e0e7ff 0%, #c3cff7 100%);
-            border-radius: 8px;
-            padding: 12px;
-        }
-        .date-display-wrapper {
-            position: relative;
-            display: flex;
-            align-items: center;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            background: white;
-            transition: border-color 0.3s;
-            cursor: pointer;
-        }
-        .date-display-wrapper:hover {
-            border-color: #667eea;
-        }
-        .date-display {
-            flex: 1;
-            padding: 12px;
-            font-size: 15px;
-            color: #2d3748;
-            font-weight: 500;
-        }
-        .date-hidden-input {
-            position: absolute;
-            opacity: 0;
-            width: 0;
-            height: 0;
-            pointer-events: none;
-        }
-        .date-picker-icon {
-            padding: 10px 12px;
-            cursor: pointer;
-            font-size: 16px;
-            color: #667eea;
-            user-select: none;
-        }
-        .pin-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 10px 0 5px;
-        }
-        .pin-dots {
-            display: flex;
-            gap: 18px;
-            margin-bottom: 28px;
-        }
+            background: #fff3cd; border: 2px solid #ffc107;
+            padding: 20px; border-radius: 10px; margin-bottom: 30px;
+        }
+        .setup-section h3 { margin-top: 0; color: #856404; }
+        .pin-container { display: flex; flex-direction: column; align-items: center; padding: 10px 0 5px; }
+        .pin-dots { display: flex; gap: 18px; margin-bottom: 28px; }
         .pin-dot {
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            border: 2px solid #856404;
-            background: transparent;
-            transition: background 0.15s;
+            width: 18px; height: 18px; border-radius: 50%;
+            border: 2px solid #856404; background: transparent; transition: background 0.15s;
         }
-        .pin-dot.filled {
-            background: #856404;
-        }
-        .pin-dot.error {
-            border-color: #e53e3e;
-            background: #e53e3e;
-        }
-        .pin-pad {
-            display: grid;
-            grid-template-columns: repeat(3, 64px);
-            gap: 12px;
-        }
+        .pin-dot.filled { background: #856404; }
+        .pin-dot.error { border-color: #e53e3e; background: #e53e3e; }
+        .pin-pad { display: grid; grid-template-columns: repeat(3, 64px); gap: 12px; }
         .pin-btn {
-            width: 64px;
-            height: 64px;
-            border-radius: 50%;
-            font-size: 22px;
-            font-weight: 700;
-            padding: 0;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: white;
-            color: #2d3748;
-            border: 2px solid #e2e8f0;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+            width: 64px; height: 64px; border-radius: 50%; font-size: 22px; font-weight: 700;
+            padding: 0; margin: 0; display: flex; align-items: center; justify-content: center;
+            background: white; color: #2d3748; border: 2px solid #e2e8f0;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08); cursor: pointer; transition: all 0.2s;
         }
-        .pin-btn:hover {
-            background: #f0f4ff;
-            border-color: #667eea;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 10px rgba(102,126,234,0.2);
-        }
-        .pin-clear {
-            background: #fff5f5;
-            color: #e53e3e;
-            border-color: #fed7d7;
-        }
-        .pin-submit {
-            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
-            color: white;
-            border-color: #38a169;
-        }
-        .pin-submit:hover {
-            box-shadow: 0 4px 10px rgba(72,187,120,0.4);
-        }
-        #pin-status {
-            margin-top: 16px;
-            font-size: 14px;
-            font-weight: 600;
-            min-height: 20px;
-        }
-        .pin-shake {
-            animation: shake 0.4s ease;
-        }
+        .pin-btn:hover { background: #f0f4ff; border-color: #667eea; transform: translateY(-1px); }
+        .pin-clear { background: #fff5f5; color: #e53e3e; border-color: #fed7d7; }
+        .pin-submit { background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); color: white; border-color: #38a169; }
+        #pin-status { margin-top: 16px; font-size: 14px; font-weight: 600; min-height: 20px; }
+        .pin-shake { animation: shake 0.4s ease; }
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
             20% { transform: translateX(-8px); }
@@ -480,662 +56,788 @@
             60% { transform: translateX(-8px); }
             80% { transform: translateX(4px); }
         }
+
+        /* Day cards */
+        h2 {
+            color: #2d3748; margin-top: 40px; margin-bottom: 20px;
+            font-size: 24px; display: flex; align-items: center; gap: 10px;
+        }
+        h2::before { content: '📊'; font-size: 28px; }
+        .days-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+        @media (max-width: 768px) { .days-container { grid-template-columns: 1fr; } }
+        .day-section {
+            padding: 25px; background: linear-gradient(135deg, #f6f8fb 0%, #ffffff 100%);
+            border-radius: 15px; border: 2px solid #e2e8f0;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .day-section:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+        .day-title { font-size: 20px; font-weight: bold; color: #2d3748; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+        .tuesday-icon::before { content: '📅'; }
+        .thursday-icon::before { content: '📆'; }
+        .current-person {
+            font-size: 28px; font-weight: bold; color: #2d3748;
+            padding: 20px; background: linear-gradient(135deg, #d4f4dd 0%, #a8e6cf 100%);
+            border-left: 5px solid #38a169; margin: 15px 0; border-radius: 10px;
+            text-align: center; box-shadow: 0 4px 10px rgba(56,161,105,0.2);
+        }
+        .highlight {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-left-color: #f59e0b; box-shadow: 0 4px 10px rgba(245,158,11,0.3);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }
+        .your-turn-badge {
+            display: inline-block; background: #f59e0b; color: white;
+            padding: 5px 15px; border-radius: 20px; font-size: 14px; margin-top: 10px; font-weight: bold;
+        }
+
+        /* Form inputs */
+        .record-section { margin-top: 20px; padding: 20px; background: #f7fafc; border-radius: 10px; border: 1px solid #e2e8f0; }
+        .date-input-group { margin: 12px 0; }
+        .date-input-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #2d3748; font-size: 14px; }
+        .date-input-group input,
+        .date-input-group select,
+        .date-input-group textarea {
+            width: 100%; padding: 12px; border: 2px solid #e2e8f0;
+            border-radius: 8px; font-size: 15px; transition: border-color 0.3s;
+            font-family: inherit;
+        }
+        .date-input-group input:focus,
+        .date-input-group select:focus,
+        .date-input-group textarea:focus { outline: none; border-color: #667eea; }
+        .date-input-group textarea { resize: vertical; min-height: 60px; }
+
+        /* Checkboxes */
+        .checkbox-group {
+            display: flex; flex-direction: column; gap: 10px;
+            background: white; border: 2px solid #e2e8f0; border-radius: 8px; padding: 12px 14px;
+        }
+        .checkbox-label {
+            display: flex; align-items: center; gap: 10px;
+            font-size: 15px; color: #2d3748; font-weight: 500; cursor: pointer;
+            padding: 6px 8px; border-radius: 6px; transition: background 0.15s;
+        }
+        .checkbox-label:hover { background: #f0f4ff; }
+        .checkbox-label input[type="checkbox"] {
+            width: 18px; height: 18px; accent-color: #667eea; cursor: pointer;
+            border: none; padding: 0; margin: 0; flex-shrink: 0;
+        }
+        .multi-note {
+            margin-top: 8px; font-size: 12px; font-weight: 600;
+            min-height: 18px; transition: color 0.2s;
+        }
+        .multi-note.warn  { color: #dd6b20; }
+        .multi-note.info  { color: #667eea; }
+
+        .date-display-wrapper {
+            position: relative; display: flex; align-items: center;
+            border: 2px solid #e2e8f0; border-radius: 8px; background: white;
+            transition: border-color 0.3s; cursor: pointer;
+        }
+        .date-display-wrapper:hover { border-color: #667eea; }
+        .date-display { flex: 1; padding: 12px; font-size: 15px; color: #2d3748; font-weight: 500; }
+        .date-hidden-input { position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none; }
+        .date-picker-icon { padding: 10px 12px; cursor: pointer; font-size: 16px; color: #667eea; user-select: none; }
+
+        /* Buttons */
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; border: none; padding: 12px 24px; border-radius: 8px;
+            cursor: pointer; font-size: 14px; font-weight: 600; margin: 5px;
+            transition: all 0.3s; box-shadow: 0 4px 10px rgba(102,126,234,0.3);
+        }
+        button:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(102,126,234,0.4); }
+        button:active { transform: translateY(0); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        button.secondary { background: linear-gradient(135deg, #a0aec0 0%, #718096 100%); box-shadow: 0 4px 10px rgba(160,174,192,0.3); }
+        button.secondary:hover { box-shadow: 0 6px 15px rgba(160,174,192,0.4); }
+        button.confirm { background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); box-shadow: 0 4px 10px rgba(72,187,120,0.3); }
+        button.confirm:hover { box-shadow: 0 6px 15px rgba(72,187,120,0.4); }
+        button.holiday {
+            background: linear-gradient(135deg, #f6ad55 0%, #dd6b20 100%);
+            box-shadow: 0 4px 10px rgba(221,107,32,0.3);
+        }
+        button.holiday:hover { box-shadow: 0 6px 15px rgba(221,107,32,0.4); }
+        .button-group { margin-top: 15px; display: flex; flex-wrap: wrap; gap: 5px; }
+
+        /* Holiday skip section */
+        .holiday-section {
+            margin-top: 14px; padding: 14px 16px;
+            background: #fffaf0; border: 2px dashed #f6ad55;
+            border-radius: 10px; display: none;
+        }
+        .holiday-section.open { display: block; }
+        .holiday-section label { display: block; margin-bottom: 8px; font-weight: 600; color: #7b341e; font-size: 13px; }
+        .holiday-section input {
+            width: 100%; padding: 10px; border: 2px solid #fbd38d;
+            border-radius: 8px; font-size: 14px; font-family: inherit;
+        }
+        .holiday-section input:focus { outline: none; border-color: #dd6b20; }
+        .holiday-confirm-btn { margin-top: 10px; width: 100%; }
+
+        /* Next week */
+        .next-week-section {
+            background: linear-gradient(135deg, #f0f4ff 0%, #e8edff 100%);
+            border: 2px solid #c3cff7; padding: 25px; border-radius: 15px; margin-top: 30px;
+        }
+        .next-week-section h2 { margin-top: 0; color: #4a5568; }
+        .next-week-section h2::before { content: '🔮'; }
+        .next-week-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px; }
+        @media (max-width: 768px) { .next-week-cards { grid-template-columns: 1fr; } }
+        .next-week-card { background: white; border-radius: 12px; padding: 20px; border: 2px solid #c3cff7; text-align: center; }
+        .next-week-card .nw-day { font-size: 16px; font-weight: 700; color: #667eea; margin-bottom: 6px; }
+        .next-week-card .nw-date { font-size: 13px; color: #718096; margin-bottom: 12px; }
+        .next-week-card .nw-person { font-size: 22px; font-weight: bold; color: #2d3748; background: linear-gradient(135deg, #e0e7ff 0%, #c3cff7 100%); border-radius: 8px; padding: 12px; }
+
+        /* Count section */
         .count-section {
             background: linear-gradient(135deg, #f0fff4 0%, #e6ffed 100%);
-            border: 2px solid #9ae6b4;
-            padding: 25px;
-            border-radius: 15px;
-            margin-top: 30px;
+            border: 2px solid #9ae6b4; padding: 25px; border-radius: 15px; margin-top: 30px;
         }
-        .count-section h2 {
-            margin-top: 0;
-            color: #276749;
-        }
-        .count-section h2::before {
-            content: '🏆';
-        }
-        .count-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 15px;
-            margin-top: 15px;
-        }
+        .count-section h2 { margin-top: 0; color: #276749; }
+        .count-section h2::before { content: '🏆'; }
+        .count-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; margin-top: 15px; }
         .count-card {
-            background: white;
-            border-radius: 12px;
-            padding: 18px 14px;
-            border: 2px solid #c6f6d5;
-            text-align: center;
-            transition: transform 0.2s, box-shadow 0.2s;
-            position: relative;
+            background: white; border-radius: 12px; padding: 18px 14px;
+            border: 2px solid #c6f6d5; text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s; position: relative;
         }
-        .count-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(56,161,105,0.15);
+        .count-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(56,161,105,0.15); }
+        .count-card.leader { border-color: #f6e05e; background: linear-gradient(135deg, #fffff0 0%, #fefcbf 100%); }
+        .count-card .person-name { font-size: 15px; font-weight: 700; color: #2d3748; margin-bottom: 8px; }
+        .count-card .count-number { font-size: 42px; font-weight: 900; color: #38a169; line-height: 1; }
+        .count-card.leader .count-number { color: #d69e2e; }
+        .count-card .count-label { font-size: 11px; color: #718096; margin-top: 5px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .count-card .day-breakdown { display: flex; justify-content: center; gap: 6px; margin-top: 10px; }
+        .count-card .day-pill { font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: 600; }
+        .count-card .day-pill.tue { background: #bee3f8; color: #2b6cb0; }
+        .count-card .day-pill.thu { background: #e9d8fd; color: #6b46c1; }
+        .count-card .leader-badge { position: absolute; top: -10px; right: -10px; font-size: 20px; }
+        .count-equal-note { text-align: center; margin-top: 12px; font-size: 13px; color: #48bb78; font-weight: 600; }
+
+        /* History */
+        .history-section { background: #f7fafc; padding: 25px; border-radius: 15px; margin-top: 20px; }
+        .history-table {
+            width: 100%; border-collapse: separate; border-spacing: 0;
+            margin-top: 15px; overflow: hidden; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
         }
-        .count-card.leader {
-            border-color: #f6e05e;
-            background: linear-gradient(135deg, #fffff0 0%, #fefcbf 100%);
+        .history-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; padding: 15px; text-align: left; font-weight: 600; font-size: 14px;
         }
-        .count-card .person-name {
-            font-size: 15px;
-            font-weight: 700;
-            color: #2d3748;
-            margin-bottom: 8px;
+        .history-table td {
+            padding: 12px 15px; border-bottom: 1px solid #e2e8f0;
+            background: white; font-size: 14px; vertical-align: top;
         }
-        .count-card .count-number {
-            font-size: 42px;
-            font-weight: 900;
-            color: #38a169;
-            line-height: 1;
+        .history-table tr:last-child td { border-bottom: none; }
+        .history-table tbody tr:hover td { background: #f7fafc; }
+
+        /* Group (all-in) row */
+        .history-table tr.group-row td { background: #f0fff4 !important; }
+        .history-table tr.group-row:hover td { background: #e6ffed !important; }
+        .group-badge {
+            display: inline-block; background: #38a169; color: white;
+            padding: 2px 9px; border-radius: 12px; font-size: 12px; font-weight: 700; margin-left: 4px;
         }
-        .count-card.leader .count-number {
-            color: #d69e2e;
+
+        /* Holiday row */
+        .history-table tr.holiday-row td { background: #fffaf0 !important; }
+        .history-table tr.holiday-row:hover td { background: #fef3e2 !important; }
+        .holiday-badge {
+            display: inline-block; background: #dd6b20; color: white;
+            padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 700;
         }
-        .count-card .count-label {
-            font-size: 11px;
-            color: #718096;
-            margin-top: 5px;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
+        .notes-cell { color: #718096; font-style: italic; font-size: 13px; }
+        .notes-cell:empty::before { content: '—'; color: #cbd5e0; }
+
+        /* Inline notes editing */
+        .notes-edit-input {
+            width: 100%; border: 1px solid #e2e8f0; border-radius: 5px;
+            padding: 6px 8px; font-size: 13px; color: #2d3748;
+            font-family: inherit; background: white; resize: none;
+            transition: border-color 0.2s;
         }
-        .count-card .day-breakdown {
-            display: flex;
-            justify-content: center;
-            gap: 6px;
-            margin-top: 10px;
+        .notes-edit-input:focus { outline: none; border-color: #667eea; }
+        .notes-save-btn {
+            font-size: 12px; padding: 5px 12px; margin-top: 4px;
+            box-shadow: none;
         }
-        .count-card .day-pill {
-            font-size: 11px;
-            padding: 2px 8px;
-            border-radius: 20px;
-            font-weight: 600;
+
+        .empty-state { text-align: center; padding: 40px; color: #a0aec0; }
+        .empty-state-icon { font-size: 64px; margin-bottom: 15px; }
+        .delete-btn {
+            background: linear-gradient(135deg, #fc8181 0%, #e53e3e 100%);
+            padding: 8px 16px; font-size: 13px; box-shadow: 0 2px 6px rgba(229,62,62,0.3);
         }
-        .count-card .day-pill.tue {
-            background: #bee3f8;
-            color: #2b6cb0;
-        }
-        .count-card .day-pill.thu {
-            background: #e9d8fd;
-            color: #6b46c1;
-        }
-        .count-card .leader-badge {
-            position: absolute;
-            top: -10px;
-            right: -10px;
-            font-size: 20px;
-        }
-        .count-equal-note {
-            text-align: center;
-            margin-top: 12px;
-            font-size: 13px;
-            color: #48bb78;
-            font-weight: 600;
-        }
+        .delete-btn:hover { box-shadow: 0 4px 10px rgba(229,62,62,0.4); }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🏢 Office Rotation Tracker</h1>
-        <div class="subtitle">Keep track of who stays late each week - synced with Google Sheets</div>
-        
-        <div id="setup-section" class="setup-section">
-            <h3>🔒 Enter PIN to unlock</h3>
-            <div class="pin-container">
-                <div class="pin-dots">
-                    <span class="pin-dot" id="dot-0"></span>
-                    <span class="pin-dot" id="dot-1"></span>
-                    <span class="pin-dot" id="dot-2"></span>
-                    <span class="pin-dot" id="dot-3"></span>
-                </div>
-                <div class="pin-pad">
-                    <button class="pin-btn" data-digit="1">1</button>
-                    <button class="pin-btn" data-digit="2">2</button>
-                    <button class="pin-btn" data-digit="3">3</button>
-                    <button class="pin-btn" data-digit="4">4</button>
-                    <button class="pin-btn" data-digit="5">5</button>
-                    <button class="pin-btn" data-digit="6">6</button>
-                    <button class="pin-btn" data-digit="7">7</button>
-                    <button class="pin-btn" data-digit="8">8</button>
-                    <button class="pin-btn" data-digit="9">9</button>
-                    <button class="pin-btn pin-clear" id="pin-clear">⌫</button>
-                    <button class="pin-btn" data-digit="0">0</button>
-                    <button class="pin-btn pin-submit" id="pin-submit">✓</button>
-                </div>
-                <div id="pin-status"></div>
-            </div>
-        </div>
+<div class="container">
+    <h1>🏢 Office Rotation Tracker</h1>
+    <div class="subtitle">Keep track of who stays late each week — synced with Google Sheets</div>
 
-        <div id="main-content" style="display:none;">
-            <div class="days-container">
-                <div class="day-section">
-                    <div class="day-title tuesday-icon">Tuesday</div>
-                    <div class="current-person" id="tuesday-display">Joseph</div>
-                    
-                    <div class="record-section">
-                        <div class="date-input-group">
-                            <label>📅 Date:</label>
-                            <div class="date-display-wrapper" onclick="document.getElementById('tuesday-date').showPicker()">
-                                <span class="date-display" id="tuesday-date-display"></span>
-                                <input type="date" id="tuesday-date" class="date-hidden-input" onchange="syncDateDisplay('tuesday')">
-                                <span class="date-picker-icon">✏️</span>
-                            </div>
-                        </div>
-                        <div class="date-input-group">
-                            <label for="tuesday-person">👤 Who stayed late:</label>
-                            <select id="tuesday-person">
-                                <option value="Joseph">Joseph</option>
-                                <option value="Luca">Luca</option>
-                                <option value="Mark">Mark</option>
-                            </select>
-                        </div>
-                        <div class="button-group">
-                            <button class="confirm" id="record-tuesday">✓ Record & Advance</button>
-                            <button class="secondary" id="skip-tuesday">Skip to Next →</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="day-section">
-                    <div class="day-title thursday-icon">Thursday</div>
-                    <div class="current-person" id="thursday-display">Joseph</div>
-                    
-                    <div class="record-section">
-                        <div class="date-input-group">
-                            <label>📅 Date:</label>
-                            <div class="date-display-wrapper" onclick="document.getElementById('thursday-date').showPicker()">
-                                <span class="date-display" id="thursday-date-display"></span>
-                                <input type="date" id="thursday-date" class="date-hidden-input" onchange="syncDateDisplay('thursday')">
-                                <span class="date-picker-icon">✏️</span>
-                            </div>
-                        </div>
-                        <div class="date-input-group">
-                            <label for="thursday-person">👤 Who stayed late:</label>
-                            <select id="thursday-person">
-                                <option value="Joseph">Joseph</option>
-                                <option value="Luca">Luca</option>
-                                <option value="Fergel">Fergel</option>
-                            </select>
-                        </div>
-                        <div class="button-group">
-                            <button class="confirm" id="record-thursday">✓ Record & Advance</button>
-                            <button class="secondary" id="skip-thursday">Skip to Next →</button>
-                        </div>
-                    </div>
-                </div>
+    <!-- PIN -->
+    <div id="setup-section" class="setup-section">
+        <h3>🔒 Enter PIN to unlock</h3>
+        <div class="pin-container">
+            <div class="pin-dots">
+                <span class="pin-dot" id="dot-0"></span>
+                <span class="pin-dot" id="dot-1"></span>
+                <span class="pin-dot" id="dot-2"></span>
+                <span class="pin-dot" id="dot-3"></span>
             </div>
-
-            <div class="next-week-section">
-                <h2>Next Week Preview</h2>
-                <div class="next-week-cards">
-                    <div class="next-week-card">
-                        <div class="nw-day">📅 Tuesday</div>
-                        <div class="nw-date" id="next-tuesday-date">—</div>
-                        <div class="nw-person" id="next-tuesday-person">—</div>
-                    </div>
-                    <div class="next-week-card">
-                        <div class="nw-day">📆 Thursday</div>
-                        <div class="nw-date" id="next-thursday-date">—</div>
-                        <div class="nw-person" id="next-thursday-person">—</div>
-                    </div>
-                </div>
+            <div class="pin-pad">
+                <button class="pin-btn" data-digit="1">1</button>
+                <button class="pin-btn" data-digit="2">2</button>
+                <button class="pin-btn" data-digit="3">3</button>
+                <button class="pin-btn" data-digit="4">4</button>
+                <button class="pin-btn" data-digit="5">5</button>
+                <button class="pin-btn" data-digit="6">6</button>
+                <button class="pin-btn" data-digit="7">7</button>
+                <button class="pin-btn" data-digit="8">8</button>
+                <button class="pin-btn" data-digit="9">9</button>
+                <button class="pin-btn pin-clear" id="pin-clear">⌫</button>
+                <button class="pin-btn" data-digit="0">0</button>
+                <button class="pin-btn pin-submit" id="pin-submit">✓</button>
             </div>
-
-            <div class="count-section">
-                <h2>In-Office Count</h2>
-                <div class="count-grid" id="count-grid">
-                    <div class="empty-state" style="grid-column:1/-1">No records yet.</div>
-                </div>
-                <div class="count-equal-note" id="count-equal-note"></div>
-            </div>
-
-            <div class="history-section">
-                <h2>History Log</h2>
-                <div id="history-container"></div>
-            </div>
+            <div id="pin-status"></div>
         </div>
     </div>
 
-    <script>
-        // Application state
-        const app = {
-            rotations: {
-                tuesday: ['Joseph', 'Luca', 'Mark'],
-                thursday: ['Joseph', 'Luca', 'Fergel']
-            },
-            currentIndex: {
-                tuesday: 0,
-                thursday: 0
-            },
-            history: [],
-            sheetUrl: null
+    <!-- Main content -->
+    <div id="main-content" style="display:none;">
+        <div class="days-container">
+
+            <!-- TUESDAY -->
+            <div class="day-section">
+                <div class="day-title tuesday-icon">Tuesday</div>
+                <div class="current-person" id="tuesday-display">Joseph</div>
+                <div class="record-section">
+                    <div class="date-input-group">
+                        <label>📅 Date:</label>
+                        <div class="date-display-wrapper" onclick="document.getElementById('tuesday-date').showPicker()">
+                            <span class="date-display" id="tuesday-date-display"></span>
+                            <input type="date" id="tuesday-date" class="date-hidden-input" onchange="syncDateDisplay('tuesday')">
+                            <span class="date-picker-icon">✏️</span>
+                        </div>
+                    </div>
+                    <div class="date-input-group">
+                        <label>👤 Who stayed late:</label>
+                        <div class="checkbox-group" id="tuesday-person-group">
+                            <label class="checkbox-label"><input type="checkbox" value="Joseph" checked> Joseph</label>
+                            <label class="checkbox-label"><input type="checkbox" value="Luca"> Luca</label>
+                            <label class="checkbox-label"><input type="checkbox" value="Mark"> Mark</label>
+                        </div>
+                        <div class="multi-note" id="tuesday-multi-note"></div>
+                    </div>
+                    <div class="date-input-group">
+                        <label for="tuesday-notes">📝 Notes (optional):</label>
+                        <textarea id="tuesday-notes" placeholder="Any notes for this entry…" rows="2"></textarea>
+                    </div>
+                    <div class="button-group">
+                        <button class="confirm" id="record-tuesday">✓ Record & Advance</button>
+                        <button class="secondary" id="skip-tuesday">Skip to Next →</button>
+                        <button class="holiday" id="holiday-toggle-tuesday" onclick="toggleHoliday('tuesday')">🏖️ Office Closed</button>
+                    </div>
+                    <div class="holiday-section" id="holiday-section-tuesday">
+                        <label for="holiday-reason-tuesday">Reason for closure:</label>
+                        <input type="text" id="holiday-reason-tuesday" placeholder="e.g. Public Holiday — Feast of St Joseph">
+                        <button class="holiday holiday-confirm-btn" id="holiday-confirm-tuesday">🏖️ Log Closure (no rotation advance)</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- THURSDAY -->
+            <div class="day-section">
+                <div class="day-title thursday-icon">Thursday</div>
+                <div class="current-person" id="thursday-display">Joseph</div>
+                <div class="record-section">
+                    <div class="date-input-group">
+                        <label>📅 Date:</label>
+                        <div class="date-display-wrapper" onclick="document.getElementById('thursday-date').showPicker()">
+                            <span class="date-display" id="thursday-date-display"></span>
+                            <input type="date" id="thursday-date" class="date-hidden-input" onchange="syncDateDisplay('thursday')">
+                            <span class="date-picker-icon">✏️</span>
+                        </div>
+                    </div>
+                    <div class="date-input-group">
+                        <label>👤 Who stayed late:</label>
+                        <div class="checkbox-group" id="thursday-person-group">
+                            <label class="checkbox-label"><input type="checkbox" value="Joseph" checked> Joseph</label>
+                            <label class="checkbox-label"><input type="checkbox" value="Luca"> Luca</label>
+                            <label class="checkbox-label"><input type="checkbox" value="Fergel"> Fergel</label>
+                        </div>
+                        <div class="multi-note" id="thursday-multi-note"></div>
+                    </div>
+                    <div class="date-input-group">
+                        <label for="thursday-notes">📝 Notes (optional):</label>
+                        <textarea id="thursday-notes" placeholder="Any notes for this entry…" rows="2"></textarea>
+                    </div>
+                    <div class="button-group">
+                        <button class="confirm" id="record-thursday">✓ Record & Advance</button>
+                        <button class="secondary" id="skip-thursday">Skip to Next →</button>
+                        <button class="holiday" id="holiday-toggle-thursday" onclick="toggleHoliday('thursday')">🏖️ Office Closed</button>
+                    </div>
+                    <div class="holiday-section" id="holiday-section-thursday">
+                        <label for="holiday-reason-thursday">Reason for closure:</label>
+                        <input type="text" id="holiday-reason-thursday" placeholder="e.g. Public Holiday — Good Friday">
+                        <button class="holiday holiday-confirm-btn" id="holiday-confirm-thursday">🏖️ Log Closure (no rotation advance)</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Next week -->
+        <div class="next-week-section">
+            <h2>Next Week Preview</h2>
+            <div class="next-week-cards">
+                <div class="next-week-card">
+                    <div class="nw-day">📅 Tuesday</div>
+                    <div class="nw-date" id="next-tuesday-date">—</div>
+                    <div class="nw-person" id="next-tuesday-person">—</div>
+                </div>
+                <div class="next-week-card">
+                    <div class="nw-day">📆 Thursday</div>
+                    <div class="nw-date" id="next-thursday-date">—</div>
+                    <div class="nw-person" id="next-thursday-person">—</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Count -->
+        <div class="count-section">
+            <h2>In-Office Count</h2>
+            <div class="count-grid" id="count-grid">
+                <div class="empty-state" style="grid-column:1/-1">No records yet.</div>
+            </div>
+            <div class="count-equal-note" id="count-equal-note"></div>
+        </div>
+
+        <!-- History -->
+        <div class="history-section">
+            <h2>History Log</h2>
+            <div id="history-container"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const app = {
+        rotations: {
+            tuesday:  ['Joseph', 'Luca', 'Mark'],
+            thursday: ['Joseph', 'Luca', 'Fergel']
+        },
+        currentIndex: { tuesday: 0, thursday: 0 },
+        history: [],
+        sheetUrl: null
+    };
+
+    const SHEET_URL  = 'https://script.google.com/macros/s/AKfycbzvsYGjs6MO5kvN_IGIsu15jXnIVj2O3fhfDw4Bj7KYnS-9vOb-qRMuO_lPCO6PV_X1/exec';
+    const CORRECT_PIN = '6969';
+    let pinEntry = '';
+
+    // ── PIN ──────────────────────────────────────────────────────────────────
+
+    function updatePinDots() {
+        for (let i = 0; i < 4; i++) {
+            const dot = document.getElementById('dot-' + i);
+            dot.classList.remove('filled', 'error');
+            if (i < pinEntry.length) dot.classList.add('filled');
+        }
+    }
+
+    function pinError() {
+        for (let i = 0; i < 4; i++) document.getElementById('dot-' + i).classList.add('error');
+        document.querySelector('.pin-dots').classList.add('pin-shake');
+        document.getElementById('pin-status').innerHTML = '<span style="color:#e53e3e">Incorrect PIN. Try again.</span>';
+        setTimeout(() => {
+            pinEntry = '';
+            updatePinDots();
+            document.querySelector('.pin-dots').classList.remove('pin-shake');
+            document.getElementById('pin-status').innerHTML = '';
+        }, 900);
+    }
+
+    async function submitPin() {
+        if (pinEntry !== CORRECT_PIN) { pinError(); return; }
+        document.getElementById('pin-status').innerHTML = '<span style="color:#667eea">🔓 Connecting…</span>';
+        try {
+            app.sheetUrl = SHEET_URL;
+            const response = await fetch(SHEET_URL + '?action=load');
+            const data = await response.json();
+            if (data.currentIndex) app.currentIndex = data.currentIndex;
+            if (data.history)      app.history      = data.history;
+            document.getElementById('setup-section').style.display = 'none';
+            document.getElementById('main-content').style.display  = 'block';
+            updateDisplays();
+            updateHistory();
+        } catch (error) {
+            document.getElementById('pin-status').innerHTML = '<span style="color:#e53e3e">Connection failed. Try again.</span>';
+            pinEntry = '';
+            updatePinDots();
+        }
+    }
+
+    // ── Dates ────────────────────────────────────────────────────────────────
+
+    function getWeekDates(weekOffset = 0) {
+        const today = new Date();
+        const day   = today.getDay();
+        const daysToTuesday = (2 - day + 7) % 7;
+        const tuesday = new Date(today);
+        tuesday.setDate(today.getDate() + daysToTuesday + weekOffset * 7);
+        const thursday = new Date(tuesday);
+        thursday.setDate(tuesday.getDate() + 2);
+        return { tuesday, thursday };
+    }
+
+    function toInputDate(date)   { return date.toISOString().split('T')[0]; }
+    function toDisplayDate(date) { return date.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }); }
+
+    function syncDateDisplay(day) {
+        const input   = document.getElementById(day + '-date');
+        const display = document.getElementById(day + '-date-display');
+        if (input.value) {
+            const [y, m, d] = input.value.split('-');
+            display.textContent = `${d}/${m}/${y}`;
+        } else {
+            display.textContent = '—';
+        }
+    }
+
+    function setDefaultDates() {
+        const { tuesday, thursday } = getWeekDates(0);
+        document.getElementById('tuesday-date').value  = toInputDate(tuesday);
+        document.getElementById('thursday-date').value = toInputDate(thursday);
+        syncDateDisplay('tuesday');
+        syncDateDisplay('thursday');
+    }
+
+    // ── Displays ─────────────────────────────────────────────────────────────
+
+    function updateNextWeekPreview() {
+        const { tuesday, thursday } = getWeekDates(1);
+        const tuesdayPerson  = app.rotations.tuesday [app.currentIndex.tuesday  % app.rotations.tuesday.length];
+        const thursdayPerson = app.rotations.thursday[app.currentIndex.thursday % app.rotations.thursday.length];
+        document.getElementById('next-tuesday-date').textContent   = toDisplayDate(tuesday);
+        document.getElementById('next-thursday-date').textContent  = toDisplayDate(thursday);
+        document.getElementById('next-tuesday-person').textContent  = tuesdayPerson;
+        document.getElementById('next-thursday-person').textContent = thursdayPerson;
+    }
+
+    function updateDisplays() {
+        ['tuesday', 'thursday'].forEach(day => {
+            const rotation = app.rotations[day];
+            const person   = rotation[app.currentIndex[day] % rotation.length];
+            const isMe     = person === 'Joseph';
+            const el       = document.getElementById(day + '-display');
+            el.innerHTML   = person + (isMe ? '<div class="your-turn-badge">🎯 Your Turn!</div>' : '');
+            el.className   = 'current-person' + (isMe ? ' highlight' : '');
+
+            // Pre-check only the current rotation person; uncheck others
+            document.querySelectorAll(`#${day}-person-group input[type="checkbox"]`).forEach(cb => {
+                cb.checked = cb.value === person;
+            });
+            updateMultiNote(day);
+        });
+        updateNextWeekPreview();
+    }
+
+    // ── Sheet sync ───────────────────────────────────────────────────────────
+
+    async function syncToSheet() {
+        try {
+            await fetch(app.sheetUrl, {
+                method: 'POST', mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'save', currentIndex: app.currentIndex, history: app.history })
+            });
+        } catch (e) {
+            alert('Failed to sync with Google Sheets. Changes saved locally only.');
+        }
+    }
+
+    // ── Helpers ──────────────────────────────────────────────────────────────
+
+    function getChecked(day) {
+        return [...document.querySelectorAll(`#${day}-person-group input[type="checkbox"]:checked`)]
+            .map(cb => cb.value);
+    }
+
+    function updateMultiNote(day) {
+        const checked = getChecked(day);
+        const noteEl  = document.getElementById(day + '-multi-note');
+        if (checked.length === 0) {
+            noteEl.className = 'multi-note warn';
+            noteEl.textContent = '⚠️ Select at least one person.';
+        } else if (checked.length > 1) {
+            noteEl.className = 'multi-note info';
+            noteEl.textContent = `ℹ️ Multiple people selected — rotation will not advance.`;
+        } else {
+            noteEl.className = 'multi-note';
+            noteEl.textContent = '';
+        }
+    }
+
+    // ── Recording ────────────────────────────────────────────────────────────
+
+    async function recordStay(day) {
+        const dateVal  = document.getElementById(day + '-date').value;
+        if (!dateVal) { alert('Please select a date'); return; }
+        const selected = getChecked(day);
+        if (selected.length === 0) { alert('Please select at least one person.'); return; }
+
+        const notes     = document.getElementById(day + '-notes').value.trim();
+        const dayLabel  = day.charAt(0).toUpperCase() + day.slice(1);
+        const timestamp = new Date().toISOString();
+        const isMulti   = selected.length > 1;
+
+        // One history row per person, tagged as part of a group if multi
+        const groupId = isMulti ? timestamp : null;
+        selected.forEach(person => {
+            app.history.unshift({
+                date: dateVal, day: dayLabel, person, notes,
+                type: 'shift', groupId, timestamp
+            });
+        });
+
+        document.getElementById(day + '-notes').value = '';
+
+        // Only advance rotation if exactly one person stayed
+        if (!isMulti) {
+            app.currentIndex[day] = (app.currentIndex[day] + 1) % app.rotations[day].length;
+        }
+
+        updateDisplays();
+        updateHistory();
+        await syncToSheet();
+    }
+
+    function nextPerson(day) {
+        app.currentIndex[day] = (app.currentIndex[day] + 1) % app.rotations[day].length;
+        updateDisplays();
+        syncToSheet();
+    }
+
+    // ── Holiday / office closed ──────────────────────────────────────────────
+
+    function toggleHoliday(day) {
+        const section = document.getElementById('holiday-section-' + day);
+        section.classList.toggle('open');
+    }
+
+    async function recordHoliday(day) {
+        const dateVal = document.getElementById(day + '-date').value;
+        if (!dateVal) { alert('Please select a date first'); return; }
+        const reasonEl = document.getElementById('holiday-reason-' + day);
+        const reason   = reasonEl.value.trim() || 'Office closed';
+
+        const record = {
+            date:      dateVal,
+            day:       day.charAt(0).toUpperCase() + day.slice(1),
+            person:    '—',
+            notes:     reason,
+            type:      'holiday',
+            timestamp: new Date().toISOString()
         };
 
-        // Google Sheets API functions
-        async function saveToSheet(data) {
-            if (!app.sheetUrl) {
-                throw new Error('Google Sheets not connected');
-            }
-            
-            const response = await fetch(app.sheetUrl, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data)
-            });
-            
-            return true;
-        }
+        app.history.unshift(record);
+        // Rotation does NOT advance for holidays
+        reasonEl.value = '';
+        document.getElementById('holiday-section-' + day).classList.remove('open');
+        updateHistory();
+        await syncToSheet();
+    }
 
-        async function loadFromSheet() {
-            if (!app.sheetUrl) {
-                throw new Error('Google Sheets not connected');
-            }
-            
-            const response = await fetch(app.sheetUrl + '?action=load');
-            const data = await response.json();
-            return data;
-        }
+    // ── Delete / notes save ──────────────────────────────────────────────────
 
-        // Hardcoded sheet URL — unlocked by PIN
-        const SHEET_URL = 'https://script.google.com/macros/s/AKfycbzvsYGjs6MO5kvN_IGIsu15jXnIVj2O3fhfDw4Bj7KYnS-9vOb-qRMuO_lPCO6PV_X1/exec';
-        const CORRECT_PIN = '6969';
-
-        // PIN pad logic
-        let pinEntry = '';
-
-        function updatePinDots() {
-            for (let i = 0; i < 4; i++) {
-                const dot = document.getElementById('dot-' + i);
-                dot.classList.remove('filled', 'error');
-                if (i < pinEntry.length) dot.classList.add('filled');
-            }
-        }
-
-        function pinError() {
-            for (let i = 0; i < 4; i++) {
-                document.getElementById('dot-' + i).classList.add('error');
-            }
-            document.querySelector('.pin-dots').classList.add('pin-shake');
-            document.getElementById('pin-status').innerHTML = '<span style="color:#e53e3e">Incorrect PIN. Try again.</span>';
-            setTimeout(() => {
-                pinEntry = '';
-                updatePinDots();
-                document.querySelector('.pin-dots').classList.remove('pin-shake');
-                document.getElementById('pin-status').innerHTML = '';
-            }, 900);
-        }
-
-        async function submitPin() {
-            if (pinEntry !== CORRECT_PIN) {
-                pinError();
-                return;
-            }
-            document.getElementById('pin-status').innerHTML = '<span style="color:#667eea">🔓 Connecting...</span>';
-            try {
-                app.sheetUrl = SHEET_URL;
-                const response = await fetch(SHEET_URL + '?action=load');
-                const data = await response.json();
-                if (data.currentIndex) app.currentIndex = data.currentIndex;
-                if (data.history) app.history = data.history;
-
-                document.getElementById('setup-section').style.display = 'none';
-                document.getElementById('main-content').style.display = 'block';
-                updateDisplays();
-                updateHistory();
-            } catch (error) {
-                document.getElementById('pin-status').innerHTML = '<span style="color:#e53e3e">Connection failed. Try again.</span>';
-                pinEntry = '';
-                updatePinDots();
-                console.error('Connection error:', error);
-            }
-        }
-
-        // Get the Tuesday and Thursday dates of a given week offset (0 = current, 1 = next)
-        function getWeekDates(weekOffset = 0) {
-            const today = new Date();
-            const day = today.getDay(); // 0=Sun,1=Mon,2=Tue,3=Wed,4=Thu,5=Fri,6=Sat
-            // Calculate days to this week's Tuesday (day 2)
-            const daysToTuesday = (2 - day + 7) % 7;
-            const tuesday = new Date(today);
-            tuesday.setDate(today.getDate() + daysToTuesday + (weekOffset * 7));
-            const thursday = new Date(tuesday);
-            thursday.setDate(tuesday.getDate() + 2);
-            return { tuesday, thursday };
-        }
-
-        // Format a Date object as YYYY-MM-DD for input[type=date]
-        function toInputDate(date) {
-            return date.toISOString().split('T')[0];
-        }
-
-        // Format a Date object as DD/MM/YYYY for display
-        function toDisplayDate(date) {
-            return date.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
-        }
-
-        // Sync date display from hidden input (DD/MM/YYYY)
-        function syncDateDisplay(day) {
-            const input = document.getElementById(day + '-date');
-            const display = document.getElementById(day + '-date-display');
-            if (input.value) {
-                const [y, m, d] = input.value.split('-');
-                display.textContent = `${d}/${m}/${y}`;
-            } else {
-                display.textContent = '—';
-            }
-        }
-
-        // Set default dates to this week's Tuesday and Thursday
-        function setDefaultDates() {
-            const { tuesday, thursday } = getWeekDates(0);
-            document.getElementById('tuesday-date').value = toInputDate(tuesday);
-            document.getElementById('thursday-date').value = toInputDate(thursday);
-            syncDateDisplay('tuesday');
-            syncDateDisplay('thursday');
-        }
-
-        // Render the upcoming week preview section
-        function updateNextWeekPreview() {
-            const { tuesday, thursday } = getWeekDates(1);
-            const nextTuesdayIdx = (app.currentIndex.tuesday) % app.rotations.tuesday.length;
-            const nextThursdayIdx = (app.currentIndex.thursday) % app.rotations.thursday.length;
-            // Peek one step ahead from current index (what will be shown AFTER current week)
-            const tuesdayPerson = app.rotations.tuesday[nextTuesdayIdx];
-            const thursdayPerson = app.rotations.thursday[nextThursdayIdx];
-
-            document.getElementById('next-tuesday-date').textContent = toDisplayDate(tuesday);
-            document.getElementById('next-thursday-date').textContent = toDisplayDate(thursday);
-            document.getElementById('next-tuesday-person').textContent = tuesdayPerson;
-            document.getElementById('next-thursday-person').textContent = thursdayPerson;
-        }
-
-        // Update displays
-        function updateDisplays() {
-            const tuesdayPerson = app.rotations.tuesday[app.currentIndex.tuesday];
-            const thursdayPerson = app.rotations.thursday[app.currentIndex.thursday];
-            
-            let tuesdayHTML = tuesdayPerson;
-            let thursdayHTML = thursdayPerson;
-            
-            if (tuesdayPerson === 'Joseph') {
-                tuesdayHTML += '<div class="your-turn-badge">🎯 Your Turn!</div>';
-            }
-            if (thursdayPerson === 'Joseph') {
-                thursdayHTML += '<div class="your-turn-badge">🎯 Your Turn!</div>';
-            }
-            
-            document.getElementById('tuesday-display').innerHTML = tuesdayHTML;
-            document.getElementById('thursday-display').innerHTML = thursdayHTML;
-            
-            document.getElementById('tuesday-person').value = tuesdayPerson;
-            document.getElementById('thursday-person').value = thursdayPerson;
-            
-            const tuesdayEl = document.getElementById('tuesday-display');
-            const thursdayEl = document.getElementById('thursday-display');
-            
-            tuesdayEl.className = 'current-person' + (tuesdayPerson === 'Joseph' ? ' highlight' : '');
-            thursdayEl.className = 'current-person' + (thursdayPerson === 'Joseph' ? ' highlight' : '');
-            
-            updateNextWeekPreview();
-        }
-
-        // Save to Google Sheets
-        async function syncToSheet() {
-            try {
-                await saveToSheet({
-                    action: 'save',
-                    currentIndex: app.currentIndex,
-                    history: app.history
-                });
-            } catch (error) {
-                console.error('Sync error:', error);
-                alert('Failed to sync with Google Sheets. Changes saved locally only.');
-            }
-        }
-
-        // Record a stay
-        async function recordStay(day) {
-            const dateInput = document.getElementById(day + '-date');
-            const personSelect = document.getElementById(day + '-person');
-            
-            if (!dateInput.value) {
-                alert('Please select a date');
-                return;
-            }
-            
-            const record = {
-                date: dateInput.value,
-                day: day.charAt(0).toUpperCase() + day.slice(1),
-                person: personSelect.value,
-                timestamp: new Date().toISOString()
-            };
-            
-            app.history.unshift(record);
-            nextPerson(day);
+    async function deleteRecord(index) {
+        if (confirm('Are you sure you want to delete this record?')) {
+            app.history.splice(index, 1);
             updateHistory();
             await syncToSheet();
         }
+    }
 
-        // Advance to next person
-        function nextPerson(day) {
-            app.currentIndex[day] = (app.currentIndex[day] + 1) % app.rotations[day].length;
-            updateDisplays();
-            syncToSheet();
-        }
+    async function saveNotes(index) {
+        const textarea = document.getElementById('notes-input-' + index);
+        if (!textarea) return;
+        app.history[index].notes = textarea.value.trim();
+        updateHistory();
+        await syncToSheet();
+    }
 
-        // Delete a record
-        async function deleteRecord(index) {
-            if (confirm('Are you sure you want to delete this record?')) {
-                app.history.splice(index, 1);
-                updateHistory();
-                await syncToSheet();
+    // ── Count ────────────────────────────────────────────────────────────────
+
+    function updateInOfficeCounts() {
+        const allPeople = [...new Set([...app.rotations.tuesday, ...app.rotations.thursday])];
+        const counts = {};
+        allPeople.forEach(p => counts[p] = { total: 0, tuesday: 0, thursday: 0 });
+
+        // Only count actual shifts, not holidays
+        app.history.filter(r => r.type !== 'holiday').forEach(record => {
+            const p = record.person;
+            const d = record.day ? record.day.toLowerCase() : '';
+            if (counts[p] !== undefined) {
+                counts[p].total++;
+                if (d === 'tuesday')  counts[p].tuesday++;
+                if (d === 'thursday') counts[p].thursday++;
             }
+        });
+
+        const maxCount = Math.max(...allPeople.map(p => counts[p].total));
+        const leaders  = allPeople.filter(p => counts[p].total === maxCount && maxCount > 0);
+
+        const grid = document.getElementById('count-grid');
+        if (app.history.filter(r => r.type !== 'holiday').length === 0) {
+            grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;padding:20px;color:#a0aec0">No shift records yet.</div>';
+            document.getElementById('count-equal-note').textContent = '';
+            return;
         }
 
-        // Update in-office count display
-        function updateInOfficeCounts() {
-            // Gather all unique people across both rotations
-            const allPeople = [...new Set([
-                ...app.rotations.tuesday,
-                ...app.rotations.thursday
-            ])];
+        grid.innerHTML = allPeople.map(person => {
+            const c = counts[person];
+            const isLeader = leaders.includes(person) && maxCount > 0;
+            let pillsHTML = '';
+            if (app.rotations.tuesday.includes(person))  pillsHTML += `<span class="day-pill tue">Tue: ${c.tuesday}</span>`;
+            if (app.rotations.thursday.includes(person)) pillsHTML += `<span class="day-pill thu">Thu: ${c.thursday}</span>`;
+            return `
+                <div class="count-card ${isLeader ? 'leader' : ''}">
+                    ${isLeader ? '<span class="leader-badge">👑</span>' : ''}
+                    <div class="person-name">${person}</div>
+                    <div class="count-number">${c.total}</div>
+                    <div class="count-label">in-office shift${c.total !== 1 ? 's' : ''}</div>
+                    <div class="day-breakdown">${pillsHTML}</div>
+                </div>`;
+        }).join('');
 
-            // Tally counts per person, per day
-            const counts = {};
-            allPeople.forEach(p => counts[p] = { total: 0, tuesday: 0, thursday: 0 });
-
-            app.history.forEach(record => {
-                const p = record.person;
-                const d = record.day ? record.day.toLowerCase() : '';
-                if (counts[p] !== undefined) {
-                    counts[p].total++;
-                    if (d === 'tuesday') counts[p].tuesday++;
-                    if (d === 'thursday') counts[p].thursday++;
-                }
-            });
-
-            const maxCount = Math.max(...allPeople.map(p => counts[p].total));
-            const leaders = allPeople.filter(p => counts[p].total === maxCount && maxCount > 0);
-            const allEqual = allPeople.every(p => counts[p].total === counts[allPeople[0]].total);
-
-            const grid = document.getElementById('count-grid');
-            const equalNote = document.getElementById('count-equal-note');
-
-            if (app.history.length === 0) {
-                grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;padding:20px;color:#a0aec0">No records yet. Start recording shifts to see counts.</div>';
-                equalNote.textContent = '';
-                return;
-            }
-
-            grid.innerHTML = allPeople.map(person => {
-                const c = counts[person];
-                const isLeader = leaders.includes(person) && maxCount > 0;
-                const inTuesdayRotation = app.rotations.tuesday.includes(person);
-                const inThursdayRotation = app.rotations.thursday.includes(person);
-
-                let pillsHTML = '';
-                if (inTuesdayRotation) {
-                    pillsHTML += `<span class="day-pill tue">Tue: ${c.tuesday}</span>`;
-                }
-                if (inThursdayRotation) {
-                    pillsHTML += `<span class="day-pill thu">Thu: ${c.thursday}</span>`;
-                }
-
-                return `
-                    <div class="count-card ${isLeader ? 'leader' : ''}">
-                        ${isLeader ? '<span class="leader-badge">👑</span>' : ''}
-                        <div class="person-name">${person}</div>
-                        <div class="count-number">${c.total}</div>
-                        <div class="count-label">in-office shift${c.total !== 1 ? 's' : ''}</div>
-                        <div class="day-breakdown">${pillsHTML}</div>
-                    </div>
-                `;
-            }).join('');
-
-            if (allEqual && app.history.length > 0) {
-                equalNote.textContent = '✅ All even — everyone has had equal in-office shifts!';
-            } else {
-                const minCount = Math.min(...allPeople.map(p => counts[p].total));
-                const behind = allPeople.filter(p => counts[p].total === minCount);
-                equalNote.textContent = behind.length === allPeople.length
-                    ? ''
-                    : `⚠️ ${behind.join(', ')} ${behind.length === 1 ? 'has' : 'have'} the fewest in-office shifts (${minCount})`;
-            }
-        }
-
-        // Update history display
-        function updateHistory() {
-            const container = document.getElementById('history-container');
-            
-            if (app.history.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">📝</div>
-                        <div>No records yet. Start recording your shifts above!</div>
-                    </div>
-                `;
-                updateInOfficeCounts();
-                return;
-            }
-            
-            let tableHTML = `
-                <table class="history-table">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Day</th>
-                            <th>Person</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
-            
-            app.history.forEach((record, index) => {
-                const date = new Date(record.date + 'T00:00:00');
-                const formattedDate = date.toLocaleDateString('en-GB', { 
-                    weekday: 'short', 
-                    year: 'numeric', 
-                    month: 'short', 
-                    day: 'numeric' 
-                });
-                
-                tableHTML += `
-                    <tr>
-                        <td>${formattedDate}</td>
-                        <td>${record.day}</td>
-                        <td><strong>${record.person}</strong></td>
-                        <td><button class="delete-btn" data-delete-index="${index}">🗑️ Delete</button></td>
-                    </tr>
-                `;
-            });
-            
-            tableHTML += `
-                    </tbody>
-                </table>
-            `;
-            
-            container.innerHTML = tableHTML;
-            
-            // Attach delete button event listeners
-            const deleteButtons = container.querySelectorAll('.delete-btn');
-            deleteButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    const index = parseInt(this.getAttribute('data-delete-index'));
-                    deleteRecord(index);
-                });
-            });
-
-            updateInOfficeCounts();
-        }
-
-        // Initialize app
-        function init() {
-            setDefaultDates();
-
-            // Wire up PIN pad digit buttons
-            document.querySelectorAll('.pin-btn[data-digit]').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    if (pinEntry.length < 4) {
-                        pinEntry += this.getAttribute('data-digit');
-                        updatePinDots();
-                        if (pinEntry.length === 4) submitPin();
-                    }
-                });
-            });
-
-            document.getElementById('pin-clear').addEventListener('click', function() {
-                pinEntry = pinEntry.slice(0, -1);
-                updatePinDots();
-                document.getElementById('pin-status').innerHTML = '';
-            });
-
-            document.getElementById('pin-submit').addEventListener('click', function() {
-                if (pinEntry.length === 4) submitPin();
-            });
-
-            // Allow keyboard input for PIN
-            document.addEventListener('keydown', function(e) {
-                if (document.getElementById('setup-section').style.display !== 'none') {
-                    if (e.key >= '0' && e.key <= '9' && pinEntry.length < 4) {
-                        pinEntry += e.key;
-                        updatePinDots();
-                        if (pinEntry.length === 4) submitPin();
-                    } else if (e.key === 'Backspace') {
-                        pinEntry = pinEntry.slice(0, -1);
-                        updatePinDots();
-                    } else if (e.key === 'Enter' && pinEntry.length === 4) {
-                        submitPin();
-                    }
-                }
-            });
-            
-            document.getElementById('record-tuesday').addEventListener('click', function() {
-                recordStay('tuesday');
-            });
-            
-            document.getElementById('record-thursday').addEventListener('click', function() {
-                recordStay('thursday');
-            });
-            
-            document.getElementById('skip-tuesday').addEventListener('click', function() {
-                nextPerson('tuesday');
-            });
-            
-            document.getElementById('skip-thursday').addEventListener('click', function() {
-                nextPerson('thursday');
-            });
-        }
-
-        // Start the app when DOM is ready
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', init);
+        const allEqual = allPeople.every(p => counts[p].total === counts[allPeople[0]].total);
+        const noteEl   = document.getElementById('count-equal-note');
+        if (allEqual) {
+            noteEl.textContent = '✅ All even — everyone has had equal in-office shifts!';
         } else {
-            init();
+            const minCount = Math.min(...allPeople.map(p => counts[p].total));
+            const behind   = allPeople.filter(p => counts[p].total === minCount);
+            noteEl.textContent = `⚠️ ${behind.join(', ')} ${behind.length === 1 ? 'has' : 'have'} the fewest in-office shifts (${minCount})`;
         }
-    </script>
+    }
+
+    // ── History ──────────────────────────────────────────────────────────────
+
+    function updateHistory() {
+        const container = document.getElementById('history-container');
+
+        if (app.history.length === 0) {
+            container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📝</div><div>No records yet. Start recording your shifts above!</div></div>`;
+            updateInOfficeCounts();
+            return;
+        }
+
+        let html = `
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Day</th>
+                        <th>Person</th>
+                        <th>Notes</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+        app.history.forEach((record, index) => {
+            const date = new Date(record.date + 'T00:00:00');
+            const formattedDate = date.toLocaleDateString('en-GB', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+            const isHoliday = record.type === 'holiday';
+            const isGrouped = record.groupId;
+            const rowClass  = isHoliday ? 'holiday-row' : (isGrouped ? 'group-row' : '');
+            const personCell = isHoliday
+                ? `<span class="holiday-badge">🏖️ Office Closed</span>`
+                : `<strong>${record.person}</strong>${isGrouped ? ' <span class="group-badge">👥 All In</span>' : ''}`;
+            const notesVal  = record.notes || '';
+
+            html += `
+                <tr class="${rowClass}">
+                    <td>${formattedDate}</td>
+                    <td>${record.day}</td>
+                    <td>${personCell}</td>
+                    <td>
+                        <textarea class="notes-edit-input" id="notes-input-${index}" rows="2" placeholder="Add notes…">${notesVal}</textarea>
+                        <button class="confirm notes-save-btn" data-save-index="${index}">💾 Save</button>
+                    </td>
+                    <td><button class="delete-btn" data-delete-index="${index}">🗑️ Delete</button></td>
+                </tr>`;
+        });
+
+        html += `</tbody></table>`;
+        container.innerHTML = html;
+
+        container.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', () => deleteRecord(parseInt(btn.getAttribute('data-delete-index'))));
+        });
+        container.querySelectorAll('.notes-save-btn').forEach(btn => {
+            btn.addEventListener('click', () => saveNotes(parseInt(btn.getAttribute('data-save-index'))));
+        });
+
+        updateInOfficeCounts();
+    }
+
+    // ── Init ─────────────────────────────────────────────────────────────────
+
+    function init() {
+        setDefaultDates();
+
+        document.querySelectorAll('.pin-btn[data-digit]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (pinEntry.length < 4) {
+                    pinEntry += this.getAttribute('data-digit');
+                    updatePinDots();
+                    if (pinEntry.length === 4) submitPin();
+                }
+            });
+        });
+        document.getElementById('pin-clear').addEventListener('click', () => {
+            pinEntry = pinEntry.slice(0, -1);
+            updatePinDots();
+            document.getElementById('pin-status').innerHTML = '';
+        });
+        document.getElementById('pin-submit').addEventListener('click', () => { if (pinEntry.length === 4) submitPin(); });
+
+        document.addEventListener('keydown', e => {
+            if (document.getElementById('setup-section').style.display !== 'none') {
+                if (e.key >= '0' && e.key <= '9' && pinEntry.length < 4) {
+                    pinEntry += e.key; updatePinDots();
+                    if (pinEntry.length === 4) submitPin();
+                } else if (e.key === 'Backspace') {
+                    pinEntry = pinEntry.slice(0, -1); updatePinDots();
+                } else if (e.key === 'Enter' && pinEntry.length === 4) {
+                    submitPin();
+                }
+            }
+        });
+
+        document.getElementById('record-tuesday').addEventListener('click',  () => recordStay('tuesday'));
+        document.getElementById('record-thursday').addEventListener('click', () => recordStay('thursday'));
+        document.getElementById('skip-tuesday').addEventListener('click',    () => nextPerson('tuesday'));
+        document.getElementById('skip-thursday').addEventListener('click',   () => nextPerson('thursday'));
+        document.getElementById('holiday-confirm-tuesday').addEventListener('click',  () => recordHoliday('tuesday'));
+        document.getElementById('holiday-confirm-thursday').addEventListener('click', () => recordHoliday('thursday'));
+
+        // Live multi-person note update
+        ['tuesday', 'thursday'].forEach(day => {
+            document.querySelectorAll(`#${day}-person-group input[type="checkbox"]`).forEach(cb => {
+                cb.addEventListener('change', () => updateMultiNote(day));
+            });
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+</script>
 </body>
 </html>
