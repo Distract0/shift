@@ -8,7 +8,7 @@
         * { box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            max-width: 900px;
+            max-width: 1100px;
             margin: 0 auto;
             padding: 20px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -63,8 +63,8 @@
             font-size: 24px; display: flex; align-items: center; gap: 10px;
         }
         h2::before { content: '📊'; font-size: 28px; }
-        .days-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
-        @media (max-width: 768px) { .days-container { grid-template-columns: 1fr; } }
+        .days-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .day-section.hidden { display: none; }
         .day-section {
             padding: 25px; background: linear-gradient(135deg, #f6f8fb 0%, #ffffff 100%);
             border-radius: 15px; border: 2px solid #e2e8f0;
@@ -72,8 +72,9 @@
         }
         .day-section:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
         .day-title { font-size: 20px; font-weight: bold; color: #2d3748; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
-        .tuesday-icon::before { content: '📅'; }
-        .thursday-icon::before { content: '📆'; }
+        .tuesday-icon::before   { content: '📅'; }
+        .wednesday-icon::before { content: '📅'; }
+        .thursday-icon::before  { content: '📆'; }
         .current-person {
             font-size: 28px; font-weight: bold; color: #2d3748;
             padding: 20px; background: linear-gradient(135deg, #d4f4dd 0%, #a8e6cf 100%);
@@ -182,8 +183,7 @@
         }
         .next-week-section h2 { margin-top: 0; color: #4a5568; }
         .next-week-section h2::before { content: '🔮'; }
-        .next-week-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px; }
-        @media (max-width: 768px) { .next-week-cards { grid-template-columns: 1fr; } }
+        .next-week-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 15px; }
         .next-week-card { background: white; border-radius: 12px; padding: 20px; border: 2px solid #c3cff7; text-align: center; }
         .next-week-card .nw-day { font-size: 16px; font-weight: 700; color: #667eea; margin-bottom: 6px; }
         .next-week-card .nw-date { font-size: 13px; color: #718096; margin-bottom: 12px; }
@@ -208,9 +208,10 @@
         .count-card .count-number { font-size: 42px; font-weight: 900; color: #38a169; line-height: 1; }
         .count-card.leader .count-number { color: #d69e2e; }
         .count-card .count-label { font-size: 11px; color: #718096; margin-top: 5px; text-transform: uppercase; letter-spacing: 0.05em; }
-        .count-card .day-breakdown { display: flex; justify-content: center; gap: 6px; margin-top: 10px; }
+        .count-card .day-breakdown { display: flex; justify-content: center; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
         .count-card .day-pill { font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: 600; }
         .count-card .day-pill.tue { background: #bee3f8; color: #2b6cb0; }
+        .count-card .day-pill.wed { background: #c6f6d5; color: #276749; }
         .count-card .day-pill.thu { background: #e9d8fd; color: #6b46c1; }
         .count-card .leader-badge { position: absolute; top: -10px; right: -10px; font-size: 20px; }
         .count-equal-note { text-align: center; margin-top: 12px; font-size: 13px; color: #48bb78; font-weight: 600; }
@@ -263,6 +264,23 @@
             box-shadow: none;
         }
 
+        /* Day toggle bar */
+        .day-toggle-bar {
+            display: flex; gap: 10px; flex-wrap: wrap;
+            margin-bottom: 20px; align-items: center;
+        }
+        .day-toggle-bar span {
+            font-size: 13px; font-weight: 600; color: #718096; margin-right: 4px;
+        }
+        .day-toggle-btn {
+            background: white; color: #2d3748; border: 2px solid #e2e8f0;
+            padding: 7px 16px; border-radius: 20px; font-size: 13px; font-weight: 600;
+            cursor: pointer; transition: all 0.2s; box-shadow: none; margin: 0;
+        }
+        .day-toggle-btn:hover { border-color: #667eea; color: #667eea; transform: none; box-shadow: none; }
+        .day-toggle-btn.active { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-color: transparent; box-shadow: 0 2px 8px rgba(102,126,234,0.35); }
+        .day-section.hidden { display: none; }
+
         .empty-state { text-align: center; padding: 40px; color: #a0aec0; }
         .empty-state-icon { font-size: 64px; margin-bottom: 15px; }
         .delete-btn {
@@ -307,10 +325,18 @@
 
     <!-- Main content -->
     <div id="main-content" style="display:none;">
+        <!-- Day visibility toggles -->
+        <div class="day-toggle-bar">
+            <span>Show/hide:</span>
+            <button class="day-toggle-btn active" data-day="tuesday">📅 Tuesday</button>
+            <button class="day-toggle-btn active" data-day="wednesday">📅 Wednesday</button>
+            <button class="day-toggle-btn active" data-day="thursday">📆 Thursday</button>
+        </div>
+
         <div class="days-container">
 
             <!-- TUESDAY -->
-            <div class="day-section">
+            <div class="day-section" id="day-section-tuesday">
                 <div class="day-title tuesday-icon">Tuesday</div>
                 <div class="current-person" id="tuesday-display">Joseph</div>
                 <div class="record-section">
@@ -348,8 +374,46 @@
                 </div>
             </div>
 
+            <!-- WEDNESDAY -->
+            <div class="day-section" id="day-section-wednesday">
+                <div class="day-title wednesday-icon">Wednesday</div>
+                <div class="current-person" id="wednesday-display">Cedric</div>
+                <div class="record-section">
+                    <div class="date-input-group">
+                        <label>📅 Date:</label>
+                        <div class="date-display-wrapper" onclick="document.getElementById('wednesday-date').showPicker()">
+                            <span class="date-display" id="wednesday-date-display"></span>
+                            <input type="date" id="wednesday-date" class="date-hidden-input" onchange="syncDateDisplay('wednesday')">
+                            <span class="date-picker-icon">✏️</span>
+                        </div>
+                    </div>
+                    <div class="date-input-group">
+                        <label>👤 Who stayed late:</label>
+                        <div class="checkbox-group" id="wednesday-person-group">
+                            <label class="checkbox-label"><input type="checkbox" value="Cedric" checked> Cedric</label>
+                            <label class="checkbox-label"><input type="checkbox" value="Joseph"> Joseph</label>
+                        </div>
+                        <div class="multi-note" id="wednesday-multi-note"></div>
+                    </div>
+                    <div class="date-input-group">
+                        <label for="wednesday-notes">📝 Notes (optional):</label>
+                        <textarea id="wednesday-notes" placeholder="Any notes for this entry…" rows="2"></textarea>
+                    </div>
+                    <div class="button-group">
+                        <button class="confirm" id="record-wednesday">✓ Record & Advance</button>
+                        <button class="secondary" id="skip-wednesday">Skip to Next →</button>
+                        <button class="holiday" id="holiday-toggle-wednesday" onclick="toggleHoliday('wednesday')">🏖️ Office Closed</button>
+                    </div>
+                    <div class="holiday-section" id="holiday-section-wednesday">
+                        <label for="holiday-reason-wednesday">Reason for closure:</label>
+                        <input type="text" id="holiday-reason-wednesday" placeholder="e.g. Public Holiday">
+                        <button class="holiday holiday-confirm-btn" id="holiday-confirm-wednesday">🏖️ Log Closure (no rotation advance)</button>
+                    </div>
+                </div>
+            </div>
+
             <!-- THURSDAY -->
-            <div class="day-section">
+            <div class="day-section" id="day-section-thursday">
                 <div class="day-title thursday-icon">Thursday</div>
                 <div class="current-person" id="thursday-display">Joseph</div>
                 <div class="record-section">
@@ -386,6 +450,7 @@
                     </div>
                 </div>
             </div>
+
         </div>
 
         <!-- Next week -->
@@ -396,6 +461,11 @@
                     <div class="nw-day">📅 Tuesday</div>
                     <div class="nw-date" id="next-tuesday-date">—</div>
                     <div class="nw-person" id="next-tuesday-person">—</div>
+                </div>
+                <div class="next-week-card">
+                    <div class="nw-day">📅 Wednesday</div>
+                    <div class="nw-date" id="next-wednesday-date">—</div>
+                    <div class="nw-person" id="next-wednesday-person">—</div>
                 </div>
                 <div class="next-week-card">
                     <div class="nw-day">📆 Thursday</div>
@@ -425,15 +495,16 @@
 <script>
     const app = {
         rotations: {
-            tuesday:  ['Joseph', 'Luca', 'Mark'],
-            thursday: ['Joseph', 'Luca', 'Fergel']
+            tuesday:   ['Joseph', 'Luca', 'Mark'],
+            wednesday: ['Cedric', 'Joseph'],
+            thursday:  ['Joseph', 'Luca', 'Fergel']
         },
-        currentIndex: { tuesday: 0, thursday: 0 },
+        currentIndex: { tuesday: 0, wednesday: 0, thursday: 0 },
         history: [],
         sheetUrl: null
     };
 
-    const SHEET_URL  = 'https://script.google.com/macros/s/AKfycbzvsYGjs6MO5kvN_IGIsu15jXnIVj2O3fhfDw4Bj7KYnS-9vOb-qRMuO_lPCO6PV_X1/exec';
+    const SHEET_URL   = 'https://script.google.com/macros/s/AKfycbzvsYGjs6MO5kvN_IGIsu15jXnIVj2O3fhfDw4Bj7KYnS-9vOb-qRMuO_lPCO6PV_X1/exec';
     const CORRECT_PIN = '6969';
     let pinEntry = '';
 
@@ -466,8 +537,12 @@
             app.sheetUrl = SHEET_URL;
             const response = await fetch(SHEET_URL + '?action=load');
             const data = await response.json();
-            if (data.currentIndex) app.currentIndex = data.currentIndex;
-            if (data.history)      app.history      = data.history;
+            if (data.currentIndex) {
+                app.currentIndex.tuesday   = data.currentIndex.tuesday   || 0;
+                app.currentIndex.wednesday = data.currentIndex.wednesday || 0;
+                app.currentIndex.thursday  = data.currentIndex.thursday  || 0;
+            }
+            if (data.history) app.history = data.history;
             document.getElementById('setup-section').style.display = 'none';
             document.getElementById('main-content').style.display  = 'block';
             updateDisplays();
@@ -487,9 +562,11 @@
         const daysToTuesday = (2 - day + 7) % 7;
         const tuesday = new Date(today);
         tuesday.setDate(today.getDate() + daysToTuesday + weekOffset * 7);
+        const wednesday = new Date(tuesday);
+        wednesday.setDate(tuesday.getDate() + 1);
         const thursday = new Date(tuesday);
         thursday.setDate(tuesday.getDate() + 2);
-        return { tuesday, thursday };
+        return { tuesday, wednesday, thursday };
     }
 
     function toInputDate(date)   { return date.toISOString().split('T')[0]; }
@@ -507,27 +584,32 @@
     }
 
     function setDefaultDates() {
-        const { tuesday, thursday } = getWeekDates(0);
-        document.getElementById('tuesday-date').value  = toInputDate(tuesday);
-        document.getElementById('thursday-date').value = toInputDate(thursday);
+        const { tuesday, wednesday, thursday } = getWeekDates(0);
+        document.getElementById('tuesday-date').value   = toInputDate(tuesday);
+        document.getElementById('wednesday-date').value = toInputDate(wednesday);
+        document.getElementById('thursday-date').value  = toInputDate(thursday);
         syncDateDisplay('tuesday');
+        syncDateDisplay('wednesday');
         syncDateDisplay('thursday');
     }
 
     // ── Displays ─────────────────────────────────────────────────────────────
 
     function updateNextWeekPreview() {
-        const { tuesday, thursday } = getWeekDates(1);
-        const tuesdayPerson  = app.rotations.tuesday [app.currentIndex.tuesday  % app.rotations.tuesday.length];
-        const thursdayPerson = app.rotations.thursday[app.currentIndex.thursday % app.rotations.thursday.length];
-        document.getElementById('next-tuesday-date').textContent   = toDisplayDate(tuesday);
-        document.getElementById('next-thursday-date').textContent  = toDisplayDate(thursday);
-        document.getElementById('next-tuesday-person').textContent  = tuesdayPerson;
-        document.getElementById('next-thursday-person').textContent = thursdayPerson;
+        const { tuesday, wednesday, thursday } = getWeekDates(1);
+        const tuesdayPerson   = app.rotations.tuesday  [app.currentIndex.tuesday   % app.rotations.tuesday.length];
+        const wednesdayPerson = app.rotations.wednesday[app.currentIndex.wednesday % app.rotations.wednesday.length];
+        const thursdayPerson  = app.rotations.thursday [app.currentIndex.thursday  % app.rotations.thursday.length];
+        document.getElementById('next-tuesday-date').textContent    = toDisplayDate(tuesday);
+        document.getElementById('next-wednesday-date').textContent  = toDisplayDate(wednesday);
+        document.getElementById('next-thursday-date').textContent   = toDisplayDate(thursday);
+        document.getElementById('next-tuesday-person').textContent   = tuesdayPerson;
+        document.getElementById('next-wednesday-person').textContent = wednesdayPerson;
+        document.getElementById('next-thursday-person').textContent  = thursdayPerson;
     }
 
     function updateDisplays() {
-        ['tuesday', 'thursday'].forEach(day => {
+        ['tuesday', 'wednesday', 'thursday'].forEach(day => {
             const rotation = app.rotations[day];
             const person   = rotation[app.currentIndex[day] % rotation.length];
             const isMe     = person === 'Joseph';
@@ -535,7 +617,6 @@
             el.innerHTML   = person + (isMe ? '<div class="your-turn-badge">🎯 Your Turn!</div>' : '');
             el.className   = 'current-person' + (isMe ? ' highlight' : '');
 
-            // Pre-check only the current rotation person; uncheck others
             document.querySelectorAll(`#${day}-person-group input[type="checkbox"]`).forEach(cb => {
                 cb.checked = cb.value === person;
             });
@@ -592,11 +673,10 @@
         const dayLabel = day.charAt(0).toUpperCase() + day.slice(1);
         const isMulti  = selected.length > 1;
 
-        // Single combined record with a people array
         app.history.unshift({
             date:      dateVal,
             day:       dayLabel,
-            people:    selected,          // always an array
+            people:    selected,
             notes,
             type:      'shift',
             timestamp: new Date().toISOString()
@@ -604,7 +684,6 @@
 
         document.getElementById(day + '-notes').value = '';
 
-        // Advance rotation only when exactly one person stayed
         if (!isMulti) {
             app.currentIndex[day] = (app.currentIndex[day] + 1) % app.rotations[day].length;
         }
@@ -643,7 +722,6 @@
         };
 
         app.history.unshift(record);
-        // Rotation does NOT advance for holidays
         reasonEl.value = '';
         document.getElementById('holiday-section-' + day).classList.remove('open');
         updateHistory();
@@ -671,20 +749,23 @@
     // ── Count ────────────────────────────────────────────────────────────────
 
     function updateInOfficeCounts() {
-        const allPeople = [...new Set([...app.rotations.tuesday, ...app.rotations.thursday])];
+        const allPeople = [...new Set([
+            ...app.rotations.tuesday,
+            ...app.rotations.wednesday,
+            ...app.rotations.thursday
+        ])];
         const counts = {};
-        allPeople.forEach(p => counts[p] = { total: 0, tuesday: 0, thursday: 0 });
+        allPeople.forEach(p => counts[p] = { total: 0, tuesday: 0, wednesday: 0, thursday: 0 });
 
-        // Only count actual shifts, not holidays
-        // Support both old records (person string) and new records (people array)
         app.history.filter(r => r.type !== 'holiday').forEach(record => {
             const people = record.people || (record.person ? [record.person] : []);
             const d = record.day ? record.day.toLowerCase() : '';
             people.forEach(p => {
                 if (counts[p] !== undefined) {
                     counts[p].total++;
-                    if (d === 'tuesday')  counts[p].tuesday++;
-                    if (d === 'thursday') counts[p].thursday++;
+                    if (d === 'tuesday')   counts[p].tuesday++;
+                    if (d === 'wednesday') counts[p].wednesday++;
+                    if (d === 'thursday')  counts[p].thursday++;
                 }
             });
         });
@@ -703,8 +784,9 @@
             const c = counts[person];
             const isLeader = leaders.includes(person) && maxCount > 0;
             let pillsHTML = '';
-            if (app.rotations.tuesday.includes(person))  pillsHTML += `<span class="day-pill tue">Tue: ${c.tuesday}</span>`;
-            if (app.rotations.thursday.includes(person)) pillsHTML += `<span class="day-pill thu">Thu: ${c.thursday}</span>`;
+            if (app.rotations.tuesday.includes(person))   pillsHTML += `<span class="day-pill tue">Tue: ${c.tuesday}</span>`;
+            if (app.rotations.wednesday.includes(person)) pillsHTML += `<span class="day-pill wed">Wed: ${c.wednesday}</span>`;
+            if (app.rotations.thursday.includes(person))  pillsHTML += `<span class="day-pill thu">Thu: ${c.thursday}</span>`;
             return `
                 <div class="count-card ${isLeader ? 'leader' : ''}">
                     ${isLeader ? '<span class="leader-badge">👑</span>' : ''}
@@ -737,7 +819,6 @@
             return;
         }
 
-        // Sort: newest date first, then most recently recorded first as tiebreaker
         const sorted = app.history
             .map((record, rawIndex) => ({ record, rawIndex }))
             .sort((a, b) => {
@@ -764,7 +845,6 @@
             const formattedDate = date.toLocaleDateString('en-GB', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
             const isHoliday = record.type === 'holiday';
 
-            // Support both old (person string) and new (people array) formats
             const people  = record.people || (record.person && record.person !== '—' ? [record.person] : []);
             const isMulti = people.length > 1;
 
@@ -840,17 +920,29 @@
             }
         });
 
-        document.getElementById('record-tuesday').addEventListener('click',  () => recordStay('tuesday'));
-        document.getElementById('record-thursday').addEventListener('click', () => recordStay('thursday'));
-        document.getElementById('skip-tuesday').addEventListener('click',    () => nextPerson('tuesday'));
-        document.getElementById('skip-thursday').addEventListener('click',   () => nextPerson('thursday'));
-        document.getElementById('holiday-confirm-tuesday').addEventListener('click',  () => recordHoliday('tuesday'));
-        document.getElementById('holiday-confirm-thursday').addEventListener('click', () => recordHoliday('thursday'));
+        document.getElementById('record-tuesday').addEventListener('click',   () => recordStay('tuesday'));
+        document.getElementById('record-wednesday').addEventListener('click',  () => recordStay('wednesday'));
+        document.getElementById('record-thursday').addEventListener('click',   () => recordStay('thursday'));
+        document.getElementById('skip-tuesday').addEventListener('click',      () => nextPerson('tuesday'));
+        document.getElementById('skip-wednesday').addEventListener('click',    () => nextPerson('wednesday'));
+        document.getElementById('skip-thursday').addEventListener('click',     () => nextPerson('thursday'));
+        document.getElementById('holiday-confirm-tuesday').addEventListener('click',   () => recordHoliday('tuesday'));
+        document.getElementById('holiday-confirm-wednesday').addEventListener('click', () => recordHoliday('wednesday'));
+        document.getElementById('holiday-confirm-thursday').addEventListener('click',  () => recordHoliday('thursday'));
 
-        // Live multi-person note update
-        ['tuesday', 'thursday'].forEach(day => {
+        ['tuesday', 'wednesday', 'thursday'].forEach(day => {
             document.querySelectorAll(`#${day}-person-group input[type="checkbox"]`).forEach(cb => {
                 cb.addEventListener('change', () => updateMultiNote(day));
+            });
+        });
+
+        // Day visibility toggles
+        document.querySelectorAll('.day-toggle-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const day = btn.getAttribute('data-day');
+                const section = document.getElementById('day-section-' + day);
+                const isHidden = section.classList.toggle('hidden');
+                btn.classList.toggle('active', !isHidden);
             });
         });
     }
